@@ -1,0 +1,17 @@
+# IDE
+.vs/*
+.vscode/*
+.idea/*
+*.iml
+
+# Build
+dist/
+share/*
+node_modules/
+**/release/*.csv
+
+# Data
+*.nb
+*.zip
+*.mx
+*-base.csv
