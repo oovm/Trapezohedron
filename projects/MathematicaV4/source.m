@@ -88,13 +88,13 @@ PolyhedronData["Dodecahedron"]
 (*SolidToTriangles is a function which breaks the faces of a Platonic solid into right triangles.*)
 
 
-SolidToTriangles[solid_] := (
-	tmp = Map[# / Sqrt[#.#]&, First /@ First[N[PolyhedronData[solid, "Faces", "Polygon"]]], {-2}];
-	f1 = Function[{x}, {{First[#], Plus @@ # / 2, Last[x]},
-		{Last[#], Plus @@ # / 2, Last[x]}}& /@ First[x]] ;
-	f2 = ({Partition[Append[#, First[#]], 2, 1], Plus @@ # / Length[#]}&);
-	Flatten[f1 /@ f2 /@ tmp, 2]
-);
+SolidToTriangles[solid_] := Block[
+	{faces, f, g},
+	faces = Map[# / Sqrt[#.#]&, N@PolyhedronData[solid, "Faces", "Polygon"][[1, All, 1]], {-2}];
+	f = {Partition[Append[#, First[#]], 2, 1], Plus @@ # / Length[#]}&;
+	g[x_] := {{First[#], Plus @@ # / 2, Last[x]}, {Last[#], Plus @@ # / 2, Last[x]}}& /@ First[x] ;
+	Flatten[g /@ f /@ faces, 2]
+];
 
 
 (* ::Text:: *)
@@ -108,10 +108,11 @@ Graphics3D@Map[Polygon, Subscript[\[ScriptH], 1] = SolidToTriangles["Dodecahedro
 (*Triangulate divides a right triangle into 2^n smaller right triangles.*)
 
 
-Triangulate[triangles_, n_Integer] := (
-	f1 = Function[{x, y, z}, {{x, #, y}, {z, #, y}}&[(x + (y - x).# #&)[# / Sqrt[#.#]&[z - x]]]];
-	Nest[f1, Flatten[Apply[f1, #, {1}], 1]&, triangles, n]
-)
+Triangulate[triangles_, n_Integer] := Block[
+	{f},
+	f[x_, y_, z_] := {{x, #, y}, {z, #, y}}&[(x + (y - x).# #&)[# / Sqrt[#.#]&[z - x]]];
+	Nest[Flatten[Apply[f, #, {1}], 1]&, triangles, n]
+]
 
 
 (* ::Text:: *)
@@ -125,9 +126,11 @@ Graphics3D@Map[Polygon, Subscript[\[ScriptH], 2] = Triangulate[Subscript[\[Scrip
 (*ShrinkTriangles scales each triangle toward its center of gravity\[LongDash]that is, toward the average of its vertices\[LongDash]by a given factor. A scaling factor of 1 means no change; a factor of 1/2 halves the size.*)
 
 
-ShrinkTriangles[triangles_, \[Sigma]_] := (
-	Function[x, (Function[x, # + \[Sigma] (x - #)] /@ x&)[Plus @@ x / 3]] /@ triangles
-)
+ShrinkTriangles[triangles_, \[Sigma]_] := Block[
+	{f},
+	f[x_] := (Function[y, # + \[Sigma] (y - #)] /@ x&)[Plus @@ x / 3];
+	f /@ triangles
+]
 
 
 (* ::Text:: *)
@@ -145,11 +148,18 @@ Graphics3D@Map[Polygon, Subscript[\[ScriptH], 3] = ShrinkTriangles[Subscript[\[S
 (*Subdivide subdivides any triangle\[LongDash]not just right triangles\[LongDash]into m^2 smaller triangles.*)
 
 
-SubdivideTriangle[triangles_, m_] := (
-	f1 = Function[{p, q, r}, MapThread[Append, {Flatten[Join[#1, Rest[#1]], 1]&[Partition[#1, 2, 1]& /@ Drop[#1, -1]],
-		Flatten[Join[Rest[#1], Drop[Rest[#1], -1]& /@ Drop[#1, -1]], 1]}&[Table[ p + (i (q - p) + j (r - p)) / m, {j, 0, m}, {i, 0, m - j}]]]];
-	Flatten[Apply[f1, triangles, {1}], 1]
-)
+SubdivideTriangle[triangles_, m_] := Block[
+	{f, g},
+	f[x_] := {
+		Flatten[Join[#1, Rest[#1]], 1]&[Partition[#1, 2, 1]& /@ Drop[x, -1]],
+		Flatten[Join[Rest@x, Drop[Rest[#1], -1]& /@ Drop[x, -1]], 1]
+	};
+	g[p_, q_, r_] := MapThread[
+		Append,
+		f@Table[ p + (i (q - p) + j (r - p)) / m, {j, 0, m}, {i, 0, m - j}]
+	];
+	Flatten[Apply[g, triangles, {1}], 1]
+]
 
 
 (* ::Text:: *)
@@ -170,11 +180,12 @@ Graphics3D@Map[Polygon, Subscript[\[ScriptH], 5a] = SubdivideTriangle[Subscript[
 (*SubdivideEdges takes the edges of the larger triangles\[LongDash]the ones produced in step 2\[LongDash]and subdivides them.*)
 
 
-SubdivideEdges[triangles_, m_] := Apply[
-	Function[{p, q, r}, Join @@ Apply[Table[#1 + i / m(#2 - #1), {i, 0, m}]&,
-		{{p, q}, {q, r}, {r, p}}, {1}]],
-	triangles, {1}
-]
+SubdivideEdges[triangles_, m_] := Block[
+	{f, g},
+	f[x_, y_] := Table[x + i / m(y - x), {i, 0, m}];
+	g[p_, q_, r_] := Join @@ Apply[f, {{p, q}, {q, r}, {r, p}}, {1}];
+	Apply[g, triangles, {1}]
+];
 
 
 (* ::Text:: *)
@@ -230,7 +241,7 @@ ThickenTransform[f_, triangles_, polys_, edges_, \[Xi]_, \[Eta]_] := Block[
 	{outerEdges, innerEdges} = {Line /@ l, Line /@ Map[\[Xi] #&, l, {-2}]};
 	radialEdges = Line /@ Transpose[{#, Map[\[Xi] #&, #, {-2}]}&[Map[f, Flatten[triangles, 1], {-2}]]];
 	{outerPolys, innerPolys, radialPolys, outerEdges, innerEdges, radialEdges}
-]
+];
 
 
 (* ::Text:: *)
