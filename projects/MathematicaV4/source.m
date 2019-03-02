@@ -13,7 +13,7 @@
 (*Copyright Michael Trott 1998*)
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Outline of the Procedure*)
 
 
@@ -88,48 +88,53 @@ PolyhedronData["Dodecahedron"]
 (*SolidToTriangles is a function which breaks the faces of a Platonic solid into right triangles.*)
 
 
-SolidToTriangles[solid_] := Flatten[
-	Function[{x}, {{First[#], Plus @@ # / 2, Last[x]},
-		{Last[#], Plus @@ # / 2, Last[x]}}& /@ First[x]] /@ ({Partition[Append[#, First[#]], 2, 1], Plus @@ # / Length[#]}&) /@
-		Map[# / Sqrt[#.#]&, First /@ First[N[Polyhedron[solid]]], {-2}], 2];
+SolidToTriangles[solid_] := (
+	tmp = Map[# / Sqrt[#.#]&, First /@ First[N[PolyhedronData[solid, "Faces", "Polygon"]]], {-2}];
+	f1 = Function[{x}, {{First[#], Plus @@ # / 2, Last[x]},
+		{Last[#], Plus @@ # / 2, Last[x]}}& /@ First[x]] ;
+	f2 = ({Partition[Append[#, First[#]], 2, 1], Plus @@ # / Length[#]}&);
+	Flatten[f1 /@ f2 /@ tmp, 2]
+);
 
 
 (* ::Text:: *)
 (*Applied to the dodecahedron, here is the result.*)
 
 
-Show[Graphics3D[Polygon /@ (Subscript[\[ScriptH], 1] = SolidToTriangles[Dodecahedron])]]
+Graphics3D@Map[Polygon, Subscript[\[ScriptH], 1] = SolidToTriangles["Dodecahedron"]]
 
 
 (* ::Text:: *)
 (*Triangulate divides a right triangle into 2^n smaller right triangles.*)
 
 
-Triangulate[triangles_, n_Integer] := Nest[
-	Flatten[Apply[Function[{x, y, z}, {{x, #, y}, {z, #, y}}&[
-		(x + (y - x).# #&)[# / Sqrt[#.#]&[z - x]]]], #, {1}], 1]&,
-	triangles, n]
+Triangulate[triangles_, n_Integer] := (
+	f1 = Function[{x, y, z}, {{x, #, y}, {z, #, y}}&[(x + (y - x).# #&)[# / Sqrt[#.#]&[z - x]]]];
+	Nest[f1, Flatten[Apply[f1, #, {1}], 1]&, triangles, n]
+)
 
 
 (* ::Text:: *)
 (*This shows the result with n=2.*)
 
 
-Show[Graphics3D[Polygon /@ (Subscript[\[ScriptH], 2] = Triangulate[Subscript[\[ScriptH], 1], 2])]]
+Graphics3D@Map[Polygon, Subscript[\[ScriptH], 2] = Triangulate[Subscript[\[ScriptH], 1], 2]]
 
 
 (* ::Text:: *)
 (*ShrinkTriangles scales each triangle toward its center of gravity\[LongDash]that is, toward the average of its vertices\[LongDash]by a given factor. A scaling factor of 1 means no change; a factor of 1/2 halves the size.*)
 
 
-ShrinkTriangles[triangles_, \[Sigma]_] := Function[x, (Function[x, # + \[Sigma] (x - #)] /@ x&)[Plus @@ x / 3]] /@ triangles
+ShrinkTriangles[triangles_, \[Sigma]_] := (
+	Function[x, (Function[x, # + \[Sigma] (x - #)] /@ x&)[Plus @@ x / 3]] /@ triangles
+)
 
 
 (* ::Text:: *)
 (*Shrinking the triangles by a factor 0.8 gives us this:*)
 
 
-Show[Graphics3D[Polygon /@ (Subscript[\[ScriptH], 3] = ShrinkTriangles[Subscript[\[ScriptH], 2], 0.8])]]
+Graphics3D@Map[Polygon, Subscript[\[ScriptH], 3] = ShrinkTriangles[Subscript[\[ScriptH], 2], 0.8]]
 
 
 (* ::Section:: *)
@@ -140,10 +145,11 @@ Show[Graphics3D[Polygon /@ (Subscript[\[ScriptH], 3] = ShrinkTriangles[Subscript
 (*Subdivide subdivides any triangle\[LongDash]not just right triangles\[LongDash]into m^2 smaller triangles.*)
 
 
-Subdivide[triangles_, m_] := Flatten[
-	Apply[Function[{p, q, r}, MapThread[Append, {Flatten[Join[#1, Rest[#1]], 1]&[Partition[#1, 2, 1]& /@ Drop[#1, -1]],
-		Flatten[Join[Rest[#1], Drop[Rest[#1], -1]& /@ Drop[#1, -1]], 1]}&[Table[ p + (i (q - p) + j (r - p)) / m, {j, 0, m}, {i, 0, m - j}]]]],
-		triangles, {1}], 1]
+SubdivideTriangle[triangles_, m_] := (
+	f1 = Function[{p, q, r}, MapThread[Append, {Flatten[Join[#1, Rest[#1]], 1]&[Partition[#1, 2, 1]& /@ Drop[#1, -1]],
+		Flatten[Join[Rest[#1], Drop[Rest[#1], -1]& /@ Drop[#1, -1]], 1]}&[Table[ p + (i (q - p) + j (r - p)) / m, {j, 0, m}, {i, 0, m - j}]]]];
+	Flatten[Apply[f1, triangles, {1}], 1]
+)
 
 
 (* ::Text:: *)
@@ -157,7 +163,7 @@ Subscript[\[ScriptH], 4] = Take[Subscript[\[ScriptH], 3], {41, 80}];
 (*Here is the face after subdividing each triangle into 4^2==16 smaller triangles.*)
 
 
-Show[Graphics3D[Polygon /@ (Subscript[\[ScriptH], 5a] = Subdivide[Subscript[\[ScriptH], 4], 4]) ]]
+Graphics3D@Map[Polygon, Subscript[\[ScriptH], 5a] = SubdivideTriangle[Subscript[\[ScriptH], 4], 4] ]
 
 
 (* ::Text:: *)
@@ -175,8 +181,10 @@ SubdivideEdges[triangles_, m_] := Apply[
 (*In this diagram the points of subdivision are marked.*)
 
 
-Show[Graphics3D[{{Hue[0], Line /@ ( Subscript[\[ScriptH], 5b] = SubdivideEdges[Subscript[\[ScriptH], 4], 3])},
-	{PointSize[.02], Map[Point, Subscript[\[ScriptH], 5b], {2}]}} ]]
+Graphics3D@{
+	{Hue[0], Line /@ ( Subscript[\[ScriptH], 5b] = SubdivideEdges[Subscript[\[ScriptH], 4], 3])},
+	{PointSize[.02], Map[Point, Subscript[\[ScriptH], 5b], {2}]}
+}
 
 
 (* ::Section:: *)
@@ -187,7 +195,7 @@ Show[Graphics3D[{{Hue[0], Line /@ ( Subscript[\[ScriptH], 5b] = SubdivideEdges[S
 (*The next task is to create a function for calculating the radial transformation.*)
 
 
-attract[x_, \[Eta]_, \[Phi]_, triangles_] := Module[
+attract[x_, \[Eta]_, \[Phi]_, triangles_] := Block[
 	{xMin, xMax, X, \[Delta]x},
 	{xMin, xMax} = Sqrt[{\[Phi] Max[#], Min[#]}&[#.#& /@ Level[triangles, {-2}]]];
 	X = (xMin + xMax) / 2;\[Delta]x = xMax - X;
@@ -202,23 +210,26 @@ attract[x_, \[Eta]_, \[Phi]_, triangles_] := Module[
 Plot[
 	attract[x, 0.6, 0.96, Subscript[\[ScriptH], 2]], {x, 0.795, 1},
 	PlotRange -> All, Frame -> True, Axes -> False, PlotStyle -> {Hue[0]}
-];
+]
 
 
 (* ::Text:: *)
 (*Each polygon has zero thickness, so the ThickenTransform builds solid 3D shapes by matching each polygon with a slightly offset, slightly smaller copy of itself, and then joining the corresponding edges with new polygons.*)
 
 
-ThickenTransform[f_, triangles_, polys_, edges_, \[Xi]_, \[Eta]_] := Module[
+ThickenTransform[f_, triangles_, polys_, edges_, \[Xi]_, \[Eta]_] := Block[
 	{l = Map[f, edges, {-2}], p = Map[f, polys, {-2}], outerPolys, innerPolys, radialPolys, outerEdges, innerEdges, radialEdges},
 	{outerPolys, innerPolys} = {Polygon /@ p, Polygon /@ Map[\[Xi] #&, p, {-2}]};
 	innerPolys = Polygon /@ Map[\[Xi] #&, p, {-2}];
-	radialPolys = Polygon /@ (Join[#[[1]], Reverse[#[[2]]]]&) /@
-		Transpose[{Flatten[Partition[#, 2, 1]& /@ l, 1],
-			Flatten[Partition[#, 2, 1]& /@ Map[\[Xi] #&, l, {-2}], 1]}];
+	radialPolys = Polygon /@ (Join[#[[1]], Reverse[#[[2]]]]&) /@ Transpose[
+		{
+			Flatten[Partition[#, 2, 1]& /@ l, 1],
+			Flatten[Partition[#, 2, 1]& /@ Map[\[Xi] #&, l, {-2}], 1]
+		}
+	];
 	{outerEdges, innerEdges} = {Line /@ l, Line /@ Map[\[Xi] #&, l, {-2}]};
-	radialEdges = Line /@ Transpose[{#, Map[\[Xi] #&, #, {-2}]}&[
-		Map[f, Flatten[triangles, 1], {-2}]]];{outerPolys, innerPolys, radialPolys, outerEdges, innerEdges, radialEdges}
+	radialEdges = Line /@ Transpose[{#, Map[\[Xi] #&, #, {-2}]}&[Map[f, Flatten[triangles, 1], {-2}]]];
+	{outerPolys, innerPolys, radialPolys, outerEdges, innerEdges, radialEdges}
 ]
 
 
@@ -226,35 +237,36 @@ ThickenTransform[f_, triangles_, polys_, edges_, \[Xi]_, \[Eta]_] := Module[
 (*Here is the result of radial transformation and thickening.*)
 
 
-Show[
-	Graphics3D[ThickenTransform[
+Graphics3D[
+	ThickenTransform[
 		Evaluate[attract[Sqrt[#.#], 0.6, 0.94, Subscript[\[ScriptH], 2]] # / Sqrt[#.#]]&,
-		Subscript[\[ScriptH], 4], Subscript[\[ScriptH], 5 a], Subscript[\[ScriptH], 5 b], 0.88, 0.6]],
+		Subscript[\[ScriptH], 4], Subscript[\[ScriptH], 5 a], Subscript[\[ScriptH], 5 b], 0.88, 0.6
+	],
 	PlotRange -> All, Axes -> True
-];
+]
 
 
 (* ::Text:: *)
 (*And here is a cross-section through the resulting surface.*)
 
 
-Show[%, PlotRange -> {All, {0, 1}, All}, ViewPoint -> {0, -4, 0}];
+Show[%, PlotRange -> {All, {0, 1}, All}, ViewPoint -> {0, -4, 0}]
 
 
 (* ::Section:: *)
-(*Final Assembly and Coloring the Faces Individually*)
+(*Step 6: Final Assembly and Coloring the Faces Individually*)
 
 
 (* ::Text:: *)
 (*Incorporating the individual functions defined above leads us directly to the function CoverImage.*)
 
 
-CoverImage[solid_, {n_Integer, m_Integer, \[Xi]_, \[Sigma]_}, \[Eta]_, \[Phi]_] := Module[
-	{l = Length[First[Polyhedron[solid]]], h1, h2, h3, h4a, h4b, h5},
+CoverImage[solid_, {n_Integer, m_Integer, \[Xi]_, \[Sigma]_}, \[Eta]_, \[Phi]_] := Block[
+	{l = Length[First[PolyhedronData[solid, "Faces", "Polygon"]]], h1, h2, h3, h4a, h4b, h5},
 	h1 = SolidToTriangles[solid];
 	h2 = Triangulate[h1, n];
 	h3 = ShrinkTriangles[h2, \[Sigma]];
-	h4a = Subdivide[h3, m];
+	h4a = SubdivideTriangle[h3, m];
 	h4b = SubdivideEdges[h3, m];
 	h5 = Apply[
 		ThickenTransform[GG = Evaluate[attract[Sqrt[#.#], \[Eta], \[Phi], h2] # / Sqrt[#.#]]&, ##, \[Xi], 0.6]&,
@@ -271,16 +283,19 @@ CoverImage[solid_, {n_Integer, m_Integer, \[Xi]_, \[Sigma]_}, \[Eta]_, \[Phi]_] 
 (*This example generates a slightly simplified version of the final cover image.*)
 
 
-CoverImage[Dodecahedron, {3, 4, 0.96, .85}, 0.6, 0.955];
+CoverImage["Dodecahedron", {3, 4, 0.96, .85}, 0.6, 0.955]
 
 
 With[
-	{colors = {0.63, 0.97, 0.7, 0.7, 0.38, 0.15, 0.7, 0.7, 0.7, 0.85, 0.6, 0.7}},
+	{
+		img = CoverImage["Dodecahedron", {3, 4, 0.96, .85}, 0.6, 0.955],
+		colors = {0.63, 0.97, 0.7, 0.7, 0.38, 0.15, 0.7, 0.7, 0.7, 0.85, 0.6, 0.7}
+	},
 	Show[
 		Graphics3D[{EdgeForm[], Thickness[0.00023],
 			Transpose[{
 				SurfaceColor[Hue[#, 0.85, 1], Hue[#, 0.2, 1], 3.2]& /@ colors,
-				CoverImage[Dodecahedron, {3, 4, 0.96, .85}, 0.6, 0.955]
+				img
 			}]}],
 		Boxed -> False,
 		PlotRange -> All,
@@ -293,7 +308,7 @@ With[
 (*By taking out one of the faces, you can have a look inside the previous example.*)
 
 
-Show[MapAt[Delete[#, 2]&,%, {1, 3}], ViewPoint -> {0.9206, 0, 0.4604}];
+Show[MapAt[Delete[#, 2]&,%, {1, 3}], ViewPoint -> {0.9206, 0, 0.4604}]
 
 
 (* ::Text:: *)
@@ -369,10 +384,13 @@ With[
 (*The last example can be rotated and stretched.*)
 
 
-Module[
+Block[
 	{cv = CoverImage[Tetrahedron, {3, 5, 0.96, 0.86}, 1.6, 1], zMin, zMax, \[ScriptCapitalR]},
 	{zMin, zMax} = {Min[#], Max[#]}&[Last[Transpose[Level[Cases[cv, _Line, \[Infinity]], {-2}]]]];
-	\[ScriptCapitalR][{x_, y_, z_}] := Module[{\[CurlyPhi] = (z - zMin) / (zMax - zMin) 0.8\[Pi]}, {{Cos[\[CurlyPhi]], Sin[\[CurlyPhi]], 0}, {-Sin[\[CurlyPhi]], Cos[\[CurlyPhi]], 0}, {0, 0, 1}}.{x, y, 2z}];
+	\[ScriptCapitalR][{x_, y_, z_}] := Block[
+		{\[CurlyPhi] = (z - zMin) / (zMax - zMin) 0.8\[Pi]},
+		{{Cos[\[CurlyPhi]], Sin[\[CurlyPhi]], 0}, {-Sin[\[CurlyPhi]], Cos[\[CurlyPhi]], 0}, {0, 0, 1}}.{x, y, 2z}
+	];
 	With[
 		{colors = Table[0.28, {4}]},
 		Show[
