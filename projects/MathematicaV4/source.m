@@ -46,7 +46,7 @@
 
 
 (* ::Text:: *)
-(*All coordinates are transformed by  \!\(\*OverscriptBox[\(r\), \(\[RightVector]\)]\)\[LongRightArrow]\!\(\*OverscriptBox[\(r\), \(\[RightVector]\)]\) f(r), where the function f(r) maps each distance from the origin onto a new distance. In particular, f(r) moves the center of each face of the dodecahedron toward the origin but moves the vertices further away, up to a fixed maximum distance. Since f(r) is scalar, this transformation does not change the direction between the origin and each point, just the distance; we'll call it the radial transformation.*)
+(*All coordinates are transformed by  \!\(\*OverscriptBox[\(r\), \(⇀\)]\)⟶\!\(\*OverscriptBox[\(r\), \(⇀\)]\) f(r), where the function f(r) maps each distance from the origin onto a new distance. In particular, f(r) moves the center of each face of the dodecahedron toward the origin but moves the vertices further away, up to a fixed maximum distance. Since f(r) is scalar, this transformation does not change the direction between the origin and each point, just the distance; we'll call it the radial transformation.*)
 
 
 (* ::Subsubsection:: *)
@@ -101,7 +101,7 @@ SolidToTriangles[solid_] := Block[
 (*Applied to the dodecahedron, here is the result.*)
 
 
-Graphics3D@Map[Polygon, Subscript[\[ScriptH], 1] = SolidToTriangles["Dodecahedron"]]
+Graphics3D@Map[Polygon, Subscript[h, 1] = SolidToTriangles["Dodecahedron"]]
 
 
 (* ::Text:: *)
@@ -119,16 +119,16 @@ Triangulate[triangles_, n_Integer] := Block[
 (*This shows the result with n=2.*)
 
 
-Graphics3D@Map[Polygon, Subscript[\[ScriptH], 2] = Triangulate[Subscript[\[ScriptH], 1], 2]]
+Graphics3D@Map[Polygon, Subscript[h, 2] = Triangulate[Subscript[h, 1], 2]]
 
 
 (* ::Text:: *)
-(*ShrinkTriangles scales each triangle toward its center of gravity\[LongDash]that is, toward the average of its vertices\[LongDash]by a given factor. A scaling factor of 1 means no change; a factor of 1/2 halves the size.*)
+(*ShrinkTriangles scales each triangle toward its center of gravity—that is, toward the average of its vertices—by a given factor. A scaling factor of 1 means no change; a factor of 1/2 halves the size.*)
 
 
-ShrinkTriangles[triangles_, \[Sigma]_] := Block[
+ShrinkTriangles[triangles_, σ_] := Block[
 	{f},
-	f[x_] := (Function[y, # + \[Sigma] (y - #)] /@ x&)[Plus @@ x / 3];
+	f[x_] := (Function[y, # + σ (y - #)] /@ x&)[Plus @@ x / 3];
 	f /@ triangles
 ]
 
@@ -137,7 +137,7 @@ ShrinkTriangles[triangles_, \[Sigma]_] := Block[
 (*Shrinking the triangles by a factor 0.8 gives us this:*)
 
 
-Graphics3D@Map[Polygon, Subscript[\[ScriptH], 3] = ShrinkTriangles[Subscript[\[ScriptH], 2], 0.8]]
+Graphics3D@Map[Polygon, Subscript[h, 3] = ShrinkTriangles[Subscript[h, 2], 0.8]]
 
 
 (* ::Section:: *)
@@ -145,7 +145,7 @@ Graphics3D@Map[Polygon, Subscript[\[ScriptH], 3] = ShrinkTriangles[Subscript[\[S
 
 
 (* ::Text:: *)
-(*Subdivide subdivides any triangle\[LongDash]not just right triangles\[LongDash]into m^2 smaller triangles.*)
+(*Subdivide subdivides any triangle not just right triangles into m^2 smaller triangles.*)
 
 
 SubdivideTriangle[triangles_, m_] := Block[
@@ -166,18 +166,18 @@ SubdivideTriangle[triangles_, m_] := Block[
 (*For example, we can extract the list of triangles making one face of the dodecahedron.*)
 
 
-Subscript[\[ScriptH], 4] = Take[Subscript[\[ScriptH], 3], {41, 80}];
+Subscript[h, 4] = Take[Subscript[h, 3], {41, 80}];
 
 
 (* ::Text:: *)
 (*Here is the face after subdividing each triangle into 4^2==16 smaller triangles.*)
 
 
-Graphics3D@Map[Polygon, Subscript[\[ScriptH], 5a] = SubdivideTriangle[Subscript[\[ScriptH], 4], 4] ]
+Graphics3D@Map[Polygon, Subscript[h, 5a] = SubdivideTriangle[Subscript[h, 4], 4] ]
 
 
 (* ::Text:: *)
-(*SubdivideEdges takes the edges of the larger triangles\[LongDash]the ones produced in step 2\[LongDash]and subdivides them.*)
+(*SubdivideEdges takes the edges of the larger triangles the ones produced in step 2 and subdivides them.*)
 
 
 SubdivideEdges[triangles_, m_] := Block[
@@ -193,8 +193,8 @@ SubdivideEdges[triangles_, m_] := Block[
 
 
 Graphics3D@{
-	{Hue[0], Line /@ ( Subscript[\[ScriptH], 5b] = SubdivideEdges[Subscript[\[ScriptH], 4], 3])},
-	{PointSize[.02], Map[Point, Subscript[\[ScriptH], 5b], {2}]}
+	{Hue[0], Line /@ ( Subscript[h, 5b] = SubdivideEdges[Subscript[h, 4], 3])},
+	{PointSize[.02], Map[Point, Subscript[h, 5b], {2}]}
 }
 
 
@@ -206,11 +206,12 @@ Graphics3D@{
 (*The next task is to create a function for calculating the radial transformation.*)
 
 
-attract[x_, \[Eta]_, \[Phi]_, triangles_] := Block[
-	{xMin, xMax, X, \[Delta]x},
-	{xMin, xMax} = Sqrt[{\[Phi] Max[#], Min[#]}&[#.#& /@ Level[triangles, {-2}]]];
-	X = (xMin + xMax) / 2;\[Delta]x = xMax - X;
-	Evaluate //@ Re[If[x < X, Sqrt[1 - (x - X)^2 / \[Delta]x^2], \[Eta] (1 - Sqrt[1 - (x - X)^2 / \[Delta]x^2]) + 1]]
+Attract[x_, η_, ϕ_, triangles_] := Block[
+	{xMin, xMax, X, δx},
+	{xMin, xMax} = Sqrt[{ϕ Max[#], Min[#]}&[#.#& /@ Level[triangles, {-2}]]];
+	X = (xMin + xMax) / 2;
+	δx = xMax - X;
+	Evaluate //@ Re[If[x < X, Sqrt[1 - (x - X)^2 / δx^2], η (1 - Sqrt[1 - (x - X)^2 / δx^2]) + 1]]
 ];
 
 
@@ -219,7 +220,7 @@ attract[x_, \[Eta]_, \[Phi]_, triangles_] := Block[
 
 
 Plot[
-	attract[x, 0.6, 0.96, Subscript[\[ScriptH], 2]], {x, 0.795, 1},
+	Attract[x, 0.6, 0.96, Subscript[h, 2]], {x, 0.795, 1},
 	PlotRange -> All, Frame -> True, Axes -> False, PlotStyle -> {Hue[0]}
 ]
 
@@ -228,19 +229,19 @@ Plot[
 (*Each polygon has zero thickness, so the ThickenTransform builds solid 3D shapes by matching each polygon with a slightly offset, slightly smaller copy of itself, and then joining the corresponding edges with new polygons.*)
 
 
-ThickenTransform[f_, triangles_, polys_, edges_, \[Xi]_, \[Eta]_] := Block[
-	{l = Map[f, edges, {-2}], p = Map[f, polys, {-2}], outerPolys, innerPolys, radialPolys, outerEdges, innerEdges, radialEdges},
-	{outerPolys, innerPolys} = {Polygon /@ p, Polygon /@ Map[\[Xi] #&, p, {-2}]};
-	innerPolys = Polygon /@ Map[\[Xi] #&, p, {-2}];
-	radialPolys = Polygon /@ (Join[#[[1]], Reverse[#[[2]]]]&) /@ Transpose[
+ThickenTransform[f_, triangles_, polys_, edges_, ξ_, η_] := Block[
+	{l = Map[f, edges, {-2}], p = Map[f, polys, {-2}], outer, inner, radial, outerEdges, innerEdges, radialEdges},
+	{outer, inner} = {Polygon /@ p, Polygon /@ Map[ξ #&, p, {-2}]};
+	inner = Polygon /@ Map[ξ #&, p, {-2}];
+	radial = Polygon /@ (Join[#[[1]], Reverse[#[[2]]]]&) /@ Transpose[
 		{
 			Flatten[Partition[#, 2, 1]& /@ l, 1],
-			Flatten[Partition[#, 2, 1]& /@ Map[\[Xi] #&, l, {-2}], 1]
+			Flatten[Partition[#, 2, 1]& /@ Map[ξ #&, l, {-2}], 1]
 		}
 	];
-	{outerEdges, innerEdges} = {Line /@ l, Line /@ Map[\[Xi] #&, l, {-2}]};
-	radialEdges = Line /@ Transpose[{#, Map[\[Xi] #&, #, {-2}]}&[Map[f, Flatten[triangles, 1], {-2}]]];
-	{outerPolys, innerPolys, radialPolys, outerEdges, innerEdges, radialEdges}
+	{outerEdges, innerEdges} = {Line /@ l, Line /@ Map[ξ #&, l, {-2}]};
+	radialEdges = Line /@ Transpose[{#, Map[ξ #&, #, {-2}]}&[Map[f, Flatten[triangles, 1], {-2}]]];
+	{outer, inner, radial, outerEdges, innerEdges, radialEdges}
 ];
 
 
@@ -250,8 +251,8 @@ ThickenTransform[f_, triangles_, polys_, edges_, \[Xi]_, \[Eta]_] := Block[
 
 Graphics3D[
 	ThickenTransform[
-		Evaluate[attract[Sqrt[#.#], 0.6, 0.94, Subscript[\[ScriptH], 2]] # / Sqrt[#.#]]&,
-		Subscript[\[ScriptH], 4], Subscript[\[ScriptH], 5 a], Subscript[\[ScriptH], 5 b], 0.88, 0.6
+		Evaluate[Attract[Sqrt[#.#], 0.6, 0.94, Subscript[h, 2]] # / Sqrt[#.#]]&,
+		Subscript[h, 4], Subscript[h, 5 a], Subscript[h, 5 b], 0.88, 0.6
 	],
 	PlotRange -> All, Axes -> True
 ]
@@ -272,47 +273,40 @@ Show[%, PlotRange -> {All, {0, 1}, All}, ViewPoint -> {0, -4, 0}]
 (*Incorporating the individual functions defined above leads us directly to the function CoverImage.*)
 
 
-CoverImage[solid_, {n_Integer, m_Integer, \[Xi]_, \[Sigma]_}, \[Eta]_, \[Phi]_] := Block[
-	{l = Length[First[PolyhedronData[solid, "Faces", "Polygon"]]], h1, h2, h3, h4a, h4b, h5},
-	h1 = SolidToTriangles[solid];
-	h2 = Triangulate[h1, n];
-	h3 = ShrinkTriangles[h2, \[Sigma]];
+Spikey[solid_, {n_Integer, m_Integer, ξ_, σ_}, η_, ϕ_] := Block[
+	{l, h2, h3, h4a, h4b, h5, f},
+	l = Length[First[PolyhedronData[solid, "Faces", "Polygon"]]];
+	h2 = Triangulate[SolidToTriangles@solid, n];
+	h3 = ShrinkTriangles[h2, σ];
 	h4a = SubdivideTriangle[h3, m];
 	h4b = SubdivideEdges[h3, m];
-	h5 = Apply[
-		ThickenTransform[GG = Evaluate[attract[Sqrt[#.#], \[Eta], \[Phi], h2] # / Sqrt[#.#]]&, ##, \[Xi], 0.6]&,
-		Transpose[{
-			Partition[h3, Length[h3] / l],
-			Partition[h4a, Length[h4a] / l],
-			Partition[h4b, Length[h3] / l]}],
-		{1}
-	]
-]
+	f = ThickenTransform[Evaluate[Attract[Sqrt[#.#], η, ϕ, h2] # / Sqrt[#.#]]&, ##, ξ, 0.6]&;
+	f @@@ Transpose[{
+		Partition[h3, Length[h3] / l],
+		Partition[h4a, Length[h4a] / l],
+		Partition[h4b, Length[h3] / l]
+	}]
+];
 
 
 (* ::Text:: *)
 (*This example generates a slightly simplified version of the final cover image.*)
 
 
-CoverImage["Dodecahedron", {3, 4, 0.96, .85}, 0.6, 0.955]
-
-
-With[
+Block[
 	{
-		img = CoverImage["Dodecahedron", {3, 4, 0.96, .85}, 0.6, 0.955],
-		colors = {0.63, 0.97, 0.7, 0.7, 0.38, 0.15, 0.7, 0.7, 0.7, 0.85, 0.6, 0.7}
+		cv = Spikey["Dodecahedron", {3, 4, 0.96, .85}, 0.6, 0.955],
+		colors = {0.63, 0.97, 0.7, 0.7, 0.38, 0.15, 0.7, 0.7, 0.7, 0.85, 0.6, 0.7},
+		sf = SurfaceColor[Hue[#, 0.85, 1], Hue[#, 0.2, 1], 3.2]&
 	},
-	Show[
-		Graphics3D[{EdgeForm[], Thickness[0.00023],
-			Transpose[{
-				SurfaceColor[Hue[#, 0.85, 1], Hue[#, 0.2, 1], 3.2]& /@ colors,
-				img
-			}]}],
-		Boxed -> False,
-		PlotRange -> All,
+	Graphics3D[{
+		EdgeForm[], Thickness[0.00023],
+		Transpose@{sf /@ colors, cv}
+	},
+		Boxed -> False, PlotRange -> All,
 		ViewPoint -> {2, -3, 3.3}
 	]
-];
+]
 
 
 (* ::Text:: *)
@@ -327,14 +321,19 @@ Show[MapAt[Delete[#, 2]&,%, {1, 3}], ViewPoint -> {0.9206, 0, 0.4604}]
 
 
 With[
-	{colors = {0.63, 0.97, 0.7, 0.7, 0.38, 0.15, 0.7, 0.7, 0.7, 0.85, 0.6, 0.7}},
-	Show[Graphics3D[{EdgeForm[], Thickness[0.00001],
-		Transpose[{
-			SurfaceColor[Hue[#, 0.85, 1], Hue[#, 0.2, 1], 3.2]& /@ colors,
-			CoverImage[Dodecahedron, {6, 6, 0.96, 0.85}, 0.6, 0.955]}
-		]}],
-		Boxed -> False, PlotRange -> All, ViewPoint -> {2, -3, 3.3}]
-];
+	{
+		cv = Spikey["Dodecahedron", {3, 4, 0.96, .85}, 0.6, 0.955],
+		colors = {0.63, 0.97, 0.7, 0.7, 0.38, 0.15, 0.7, 0.7, 0.7, 0.85, 0.6, 0.7},
+		sf = SurfaceColor[Hue[#, 0.85, 1], Hue[#, 0.2, 1], 3.2]&
+	},
+	Graphics3D[{
+		EdgeForm[], Thickness[0.00001],
+		Transpose[{sf /@ colors, cv}]
+	},
+		Boxed -> False, PlotRange -> All,
+		ViewPoint -> {2, -3, 3.3}
+	]
+]
 
 
 (* ::Section:: *)
@@ -347,13 +346,17 @@ With[
 
 
 With[
-	{colors = Table[Random[], {6}]},
-	Show[Graphics3D[{EdgeForm[], Thickness[0.00023],
-		Transpose[{
-			SurfaceColor[Hue[#, 0.35, 0.8], Hue[#, 0.28, 0.9], 2.7]& /@ colors,
-			CoverImage[Hexahedron, {4, 4, 0.9, 0.9}, 1.4, 1]
-		}]}],
-		Boxed -> False, PlotRange -> All]
+	{
+		sf = SurfaceColor[Hue[#, 0.35, 0.8], Hue[#, 0.28, 0.9], 2.7]&,
+		colors = Table[RandomReal[], {6}],
+		poly = Spikey["Hexahedron", {4, 4, 0.9, 0.9}, 1.4, 1]
+	},
+	Graphics3D[{
+		EdgeForm[], Thickness[0.00023],
+		Transpose[{sf /@ colors, poly}]
+	},
+		Boxed -> False, PlotRange -> All
+	]
 ];
 
 
@@ -369,14 +372,18 @@ Show[%, PlotRange -> {All, {0, 1.2}, All}, ViewPoint -> {0.3, -2.6, 0.4}];
 
 
 With[
-	{colors = Range[20] / 20},
-	Show[Graphics3D[{EdgeForm[], GrayLevel[1], Thickness[0.0001],
-		Transpose[{
-			SurfaceColor[Hue[#, 0.6, 1], Hue[#, 0.7, 0.7], 3.4]& /@ colors,
-			CoverImage[Icosahedron, {3, 3, 0.95, 0.8}, 0.7, 0.99]
-		}]}],
-		Boxed -> False, PlotRange -> All, Background -> GrayLevel[0]]
-];
+	{
+		sf = SurfaceColor[Hue[#, 0.6, 1], Hue[#, 0.7, 0.7], 3.4]&,
+		colors = Range[20] / 20,
+		poly = Spikey["Icosahedron", {3, 3, 0.95, 0.8}, 0.7, 0.99]
+	},
+	Graphics3D[{
+		EdgeForm[], GrayLevel[1], Thickness[0.0001],
+		Transpose[{sf /@ colors, poly}]
+	},
+		Boxed -> False, PlotRange -> All
+	]
+]
 
 
 (* ::Text:: *)
@@ -384,11 +391,18 @@ With[
 
 
 With[
-	{colors = Table[0.18, {4}]},
-	Show[Graphics3D[{EdgeForm[], Hue[0], Thickness[0.0001],
-		Transpose[{SurfaceColor[Hue[#], Hue[#], 2.1]& /@ colors, CoverImage[Tetrahedron, {3, 3, 0.98, 0.92}, 1.6, 1]}]}],
-		Boxed -> False, PlotRange -> All, Background -> Hue[0.72]]
-];
+	{
+		sf = SurfaceColor[Hue[#], Hue[#], 2.1]& ,
+		colors = Table[0.18, {4}],
+		poly = Spikey["Tetrahedron", {3, 3, 0.98, 0.92}, 1.6, 1]
+	},
+	Graphics3D[{
+		EdgeForm[], Hue[0], Thickness[0.0001],
+		Transpose[{sf /@ colors, poly}]
+	},
+		Boxed -> False, PlotRange -> All, Background -> Hue[0.72]
+	]
+]
 
 
 (* ::Text:: *)
@@ -396,21 +410,24 @@ With[
 
 
 Block[
-	{cv = CoverImage[Tetrahedron, {3, 5, 0.96, 0.86}, 1.6, 1], zMin, zMax, \[ScriptCapitalR]},
-	{zMin, zMax} = {Min[#], Max[#]}&[Last[Transpose[Level[Cases[cv, _Line, \[Infinity]], {-2}]]]];
-	\[ScriptCapitalR][{x_, y_, z_}] := Block[
-		{\[CurlyPhi] = (z - zMin) / (zMax - zMin) 0.8\[Pi]},
-		{{Cos[\[CurlyPhi]], Sin[\[CurlyPhi]], 0}, {-Sin[\[CurlyPhi]], Cos[\[CurlyPhi]], 0}, {0, 0, 1}}.{x, y, 2z}
+	{
+		colors = Table[0.28, {4}],
+		cv = Spikey["Tetrahedron", {3, 5, 0.96, 0.86}, 1.6, 1],
+		zMin, zMax, ℛ
+	},
+	{zMin, zMax} = {Min[#], Max[#]}&[Last[Transpose[Level[Cases[cv, _Line, Infinity], {-2}]]]];
+	ℛ[{x_, y_, z_}] := Block[
+		{φ = (z - zMin) / (zMax - zMin) 0.8π},
+		{{Cos[φ], Sin[φ], 0}, {-Sin[φ], Cos[φ], 0}, {0, 0, 1}}.{x, y, 2z}
 	];
-	With[
-		{colors = Table[0.28, {4}]},
-		Show[
-			Graphics3D[{EdgeForm[], Hue[0], Thickness[0.0001],
-				Transpose[{
-					SurfaceColor[Hue[#], Hue[#], 2.1]& /@ colors,
-					cv /. (lp : (Line | Polygon))[l_] :> lp[\[ScriptCapitalR] /@ l]
-				}]}],
-			Boxed -> False, PlotRange -> All, Background -> Hue[0.72]
-		]
+	Graphics3D[{
+		EdgeForm[], Hue[0], Thickness[0.0001],
+		Transpose@{
+			SurfaceColor[Hue[#], Hue[#], 2.1]& /@ colors,
+			cv /. (lp : (Line | Polygon))[l_] :> lp[ℛ /@ l]
+		}
+	},
+		Boxed -> False, PlotRange -> All,
+		Background -> Hue[0.72]
 	]
-];
+]
