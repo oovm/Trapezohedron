@@ -10,7 +10,7 @@
 
 (* ::Item:: *)
 (* Michael Trott *)
-(*\[Copyright] Michael Trott 2007*)
+(*© Michael Trott 2007*)
 
 
 (* ::Section::Closed:: *)
@@ -72,14 +72,14 @@ dodecahedronTriangles = Block[
 (*Here is the result.*)
 
 
-Graphics3D[dodecahedronTriangles,Boxed->False]
+Graphics3D[dodecahedronTriangles, Boxed -> False]
 
 
 (* ::Text:: *)
 (* For later use, we calculate the minimal and maximal distances of the dodecahedron surface to the origin. *)
 
 
-{Subscript[\[Rho], min], Subscript[\[Rho], max]} = {Min[#], Max[#]}&[Norm /@ Union[Level[dodecahedronTriangles, {-2}]]]
+{Subscript[ρ, min], Subscript[ρ, max]} = {Min[#], Max[#]}&[Norm /@ Union[Level[dodecahedronTriangles, {-2}]]]
 
 
 (* ::Section:: *)
@@ -152,8 +152,8 @@ LsOnDodecahedron // Flatten // Length
 
 
 contractL[L : Polygon[l_]] := With[
-	{mp = (l[[2]] + l[[5]]) / 2, \[Alpha] = 0.8},
-	Polygon[(mp + \[Alpha] (# - mp)&) /@ l]
+	{mp = (l[[2]] + l[[5]]) / 2, α = 0.8},
+	Polygon[(mp + α (# - mp)&) /@ l]
 ];
 
 
@@ -165,14 +165,14 @@ Graphics3D[LsOnDodecahedron /. p_Polygon :> contractL[p], Boxed -> False]
 
 
 (* ::Text:: *)
-(* The function \[ScriptCapitalF] induces a radial transformation of the coordinates. *)
+(* The function ℱ induces a radial transformation of the coordinates. *)
 
 
-\[ScriptCapitalF][\[Alpha]_, xyz_, f_] := \[Alpha] xyz f[(Sqrt[xyz.xyz] - Subscript[\[Rho], min]) / (Subscript[\[Rho], max] - Subscript[\[Rho], min])];
+ℱ[α_, xyz_, f_] := α xyz f[(Sqrt[xyz.xyz] - Subscript[ρ, min]) / (Subscript[ρ, max] - Subscript[ρ, min])];
 
 
 (* ::Text:: *)
-(*Using f(r)\[Congruent]1 keeps the faces of the dodecahedron flat.*)
+(*Using f(r)≡1 keeps the faces of the dodecahedron flat.*)
 
 
 \[ScriptF][r_] := 1;
@@ -182,18 +182,18 @@ Graphics3D[LsOnDodecahedron /. p_Polygon :> contractL[p], Boxed -> False]
 (*The base and the extension of the hats are colored differently. In addition, to emphasize the edges of the dodecahedron, a color variation is added across its faces.*)
 
 
-baseColor[\[Xi]_] := Hue[0.1 - 0.11\[Xi], 0.5 + 0.5\[Xi], 1];
-baseOpacity[\[Xi]_] := Opacity[0.35 + 0.65(1 - (1 - \[Xi]^2)^(1 / 2))];
-extensionColor[\[Xi]_] := Hue[
+baseColor[ξ_] := Hue[0.1 - 0.11ξ, 0.5 + 0.5ξ, 1];
+baseOpacity[ξ_] := Opacity[0.35 + 0.65(1 - (1 - ξ^2)^(1 / 2))];
+extensionColor[ξ_] := Hue[
 	0.05 - 0.2 If[
-		(1 - (1 - \[Xi]^2)^(1 / 2)) > 0.3, 0.3,
-		(1 - (1 - \[Xi]^2)^(1 / 2))
+		(1 - (1 - ξ^2)^(1 / 2)) > 0.3, 0.3,
+		(1 - (1 - ξ^2)^(1 / 2))
 	],
-	0.5 + 0.8\[Xi],
-	1 - 0.35(1 - (1 - \[Xi]^2)^(1 / 2))
+	0.5 + 0.8ξ,
+	1 - 0.35(1 - (1 - ξ^2)^(1 / 2))
 ];
-extensionOpacity[\[Xi]_] := Opacity[0.4 + 0.4\[Xi]];
-extensionSpecularExponent[\[Xi]_] := 2.5\[Xi];
+extensionOpacity[ξ_] := Opacity[0.4 + 0.4ξ];
+extensionSpecularExponent[ξ_] := 2.5ξ;
 
 
 (* ::Text:: *)
@@ -201,22 +201,23 @@ extensionSpecularExponent[\[Xi]_] := 2.5\[Xi];
 
 
 addHatToL[L : Polygon[l_]] := Module[
-	{mp = Plus @@ l / 7, qs, \[ScriptR], \[CurlyPhi], mpF, rs},
-	qs = (\[ScriptCapitalF][1, #, \[ScriptF]]&) /@ l;\[ScriptR] = Sqrt[#.#]&[Plus @@ l / 7];
-	\[CurlyPhi] = (\[ScriptR] - Subscript[\[Rho], min]) / (Subscript[\[Rho], max] - Subscript[\[Rho], min]);
-	mpF = \[ScriptCapitalF][1.06, mp, \[ScriptF]];
-	rs = (\[ScriptCapitalF][1.06, mp + 0.6 (# - mp), \[ScriptF]]&) /@ l;
+	{mp = Plus @@ l / 7, qs, \[ScriptR], φ, mpF, rs},
+	qs = (ℱ[1, #, \[ScriptF]]&) /@ l;
+	\[ScriptR] = Sqrt[#.#]&[Plus @@ l / 7];
+	φ = (\[ScriptR] - Subscript[ρ, min]) / (Subscript[ρ, max] - Subscript[ρ, min]);
+	mpF = ℱ[1.06, mp, \[ScriptF]];
+	rs = (ℱ[1.06, mp + 0.6 (# - mp), \[ScriptF]]&) /@ l;
 	{
 		{
-			extensionColor[\[CurlyPhi]],
-			Specularity[extensionColor[\[CurlyPhi]], extensionSpecularExponent[\[CurlyPhi]]],
-			extensionOpacity[\[CurlyPhi]],
+			extensionColor[φ],
+			Specularity[extensionColor[φ], extensionSpecularExponent[φ]],
+			extensionOpacity[φ],
 			Polygon[Append[#1, mpF]]& /@ Partition[Append[rs, First[rs]], 2, 1]
 		},
 		{
-			baseColor[RandomReal[{\[CurlyPhi] - 0.2, \[CurlyPhi] + 0.2}]],
-			Specularity[baseColor[\[CurlyPhi]], 2.3],
-			baseOpacity[\[CurlyPhi]],
+			baseColor[RandomReal[{φ - 0.2, φ + 0.2}]],
+			Specularity[baseColor[φ], 2.3],
+			baseOpacity[φ],
 			Polygon[Join[#1, Reverse[#2]]]& @@@ Transpose[Partition[Append[#, First[#]], 2, 1]& /@ {qs, rs}]
 		}
 	}
@@ -247,10 +248,10 @@ Graphics3D[
 (*To make the dodecahedron hyperbolic, we now extrude its vertices and intrude the centers of the faces. We use a new function f for the radial transformation.*)
 
 
-\[ScriptF][r_] := Re[1 / 2 (ArcSin[2 r - 1] + \[Pi] / 2)];
+\[ScriptF][r_] := Re[1 / 2 (ArcSin[2 r - 1] + π / 2)];
 
 
-Plot[\[ScriptF][r], {r, 0, Subscript[\[Rho], max]}]
+Plot[\[ScriptF][r], {r, 0, Subscript[ρ, max]}]
 
 
 (* ::Text:: *)
