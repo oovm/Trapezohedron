@@ -6,40 +6,54 @@
 
 (* ::Subtitle:: *)
 (*Making the Escher-style hyperbolic dodecahedron symbolizing Mathematica 5*)
-(**)
 
 
-(* ::Author:: *)
+(* ::Item:: *)
 (*Michael Trott*)
 (*Copyright Michael Trott 2003*)
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Outline of the Procedure*)
 
 
+(* ::Subsubsection:: *)
+(*Step 1*)
+
+
 (* ::Text:: *)
-(*Step 1:*)
 (*We construct a regular dodecahedron centered at the origin.*)
 
 
+(* ::Subsubsection:: *)
+(*Step 2*)
+
+
 (* ::Text:: *)
-(*Step 2:*)
 (*The faces of the dodecahedron are then subdivided into right triangles (similar to M.\[NonBreakingSpace]C.\[NonBreakingSpace]Escher's Quadratlimit work), each of which is then scaled down so that gaps are introduced between them.*)
 
 
+(* ::Subsubsection:: *)
+(*Step 3*)
+
+
 (* ::Text:: *)
-(*Step 3:*)
 (*Each triangle is further subdivided so that, when the surfaces are transformed in the next step, the resulting surfaces are relatively smooth.*)
 
 
+(* ::Subsubsection:: *)
+(*Step 4*)
+
+
 (* ::Text:: *)
-(*Step 4:*)
 (*Outlines of all triangles are constructed.*)
 
 
+(* ::Subsubsection:: *)
+(*Step 5*)
+
+
 (* ::Text:: *)
-(*Step 5:*)
 (*A radial transformation is applied to each triangle. Then each triangle is given depth by connecting it to a slightly smaller copy moved closer to the origin.*)
 
 
@@ -47,43 +61,39 @@
 (*Step 1: The Regular Dodecahedron*)
 
 
-(* ::Commentary:: *)
+(* ::Text:: *)
 (*This loads the standard package that contains primitives for rendering the Platonic solids.*)
 
 
-Needs["Graphics`Polyhedra`"]
-
-
-(* ::Commentary:: *)
-(*Here is a regular dodecahedron.*)
-
-
-Show[Polyhedron[Dodecahedron]];
+PolyhedronData["Dodecahedron"]
 
 
 (* ::Section:: *)
 (*Step 2: Dividing into Triangles*)
 
 
-(* ::Commentary:: *)
+(* ::Text:: *)
 (*The function SolidToTriangles breaks the faces of a Platonic solid into right triangles.*)
 
 
-SolidToTriangles[solid_]:=With[{f=Length[Faces[solid][[1]]]},Flatten[Function[l,({Polygon[{#[[1]],#[[2]],Plus@@l[[1]]/f}]}&)/@Partition[Append[l[[1]],First[l[[1]]]],2,1]]/@Polyhedron[solid][[1]]]];
+SolidToTriangles[solid_]:=Block[
+{f=Length[PolyhedronData[solid, "Faces"][[1]]]},
+Flatten[Function[l,({Polygon[{#[[1]],#[[2]],Plus@@l[[1]]/f}]}&)/@Partition[Append[l[[1]],First[l[[1]]]],2,1]]/@PolyhedronData[solid][[1]]]
+];
 
 
-(* ::Commentary:: *)
+(* ::Text:: *)
 (*Applied to the dodecahedron, here is the result.*)
 
 
-Show[Graphics3D[Subscript[\[ScriptH], 1]=SolidToTriangles[Dodecahedron]]];
+Graphics3D[Subscript[\[ScriptH], 1]=SolidToTriangles["Dodecahedron"]]
 
 
 (* ::Section:: *)
 (*Step 3: Subdividing the Triangles*)
 
 
-(* ::Commentary:: *)
+(* ::Text:: *)
 (*Here is a list of triangles, that subdivide a triangle in an Escher-style way.*)
 
 
@@ -93,7 +103,7 @@ TriangulatedTriangle=Polygon[Append[#,0]& /@ #]&/@({{{0,0},{-2,-2},{0,-4}},{{0,-
 Show[Graphics3D[TriangulatedTriangle]];
 
 
-(* ::Commentary:: *)
+(* ::Text:: *)
 (*The function MapTo3DTriangle maps this triangulation onto all triangles of the above triangulation of the dodecahedron.*)
 
 
@@ -107,7 +117,7 @@ Show[Graphics3D[Subscript[\[ScriptH], 2]=Polygon/@(N[First/@Flatten[MapTo3DTrian
 (*Steps 4: Triangle Edge Construction*)
 
 
-(* ::Commentary:: *)
+(* ::Text:: *)
 (*The function TriangleBorders constructs the outlines of all triangles.*)
 
 
@@ -124,7 +134,7 @@ Show[Graphics3D[{EdgeForm[], Subscript[\[ScriptH], 3]=Transpose[TriangleBorders[
 (*Steps 5: Radial Transformation and Thickening*)
 
 
-(* ::Commentary:: *)
+(* ::Text:: *)
 (*The next task is to create a function for calculating the radial transformation.*)
 
 
@@ -135,28 +145,28 @@ makeContractFunction[];
 contract[x_List]:=(x contract[Sqrt[x.x]])/Sqrt[x.x];
 
 
-(* ::Commentary:: *)
+(* ::Text:: *)
 (*The following is a plot of the function contract.*)
 
 
 Plot[contract[x],{x,0.7,1.2},Frame->True,Axes->False,PlotRange->All];
 
 
-(* ::Commentary:: *)
+(* ::Text:: *)
 (*Applying contract to Subscript[\[ScriptH], 2] gives the following hyperbolic dodecahedron.*)
 
 
 Show[Graphics3D[Map[contract,Subscript[\[ScriptH], 2],{-2}]],PlotRange->All,Axes->False];
 
 
-(* ::Commentary:: *)
+(* ::Text:: *)
 (*The function Hyperbolicize takes the triangle outlines in Subscript[\[ScriptH], 3] and applies the function contract. In addition, it does this with a smaller copy of Subscript[\[ScriptH], 3] and connects the edges of the resulting two hyperbolic dodecahedra.*)
 
 
 Hyperbolicize[f_,{polys_,edges_},radialContractionFactor_]:=Module[{l=First/@Map[f,edges,{-2}],p=First/@Map[f,Flatten[polys],{-2}],outerPolys,innerPolys,radialPolys,outerEdges,innerEdges},outerPolys=Polygon/@p;innerPolys=Polygon/@Map[radialContractionFactor #1&,p,{-2}];radialPolys=Polygon/@(Join[#[[1]],Reverse[#[[2]]]]&)/@Transpose[{Flatten[(Partition[#,2,1]&)/@l,1],Flatten[(Partition[#1,2,1]&)/@Map[radialContractionFactor #1&,l,{-2}],1]}];{outerPolys,innerPolys,radialPolys}];
 
 
-(* ::Commentary:: *)
+(* ::Text:: *)
 (*This generates the final cover image. The edges of the triangles in Subscript[\[ScriptH], 3] are thickened and contracted.*)
 
 
@@ -170,7 +180,7 @@ CoverGraphicsMathematicaV5=Show[Graphics3D[{EdgeForm[],SurfaceColor[Hue[0.08],Hu
 (*A Variant*)
 
 
-(* ::Commentary:: *)
+(* ::Text:: *)
 (*The above implementation can be used with other Platonic solids, radial transformations, and coloring schemes. Here it is done with a cube (hexahedron).*)
 
 
