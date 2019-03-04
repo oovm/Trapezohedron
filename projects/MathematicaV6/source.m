@@ -57,9 +57,16 @@ PolyhedronData["Dodecahedron"]
 (* This divides the faces of the dodecahedron into isosceles triangles. *)
 
 
-dodecahedronTriangles = N[Flatten[Function[l, Module[{mp = 1 / 5 Plus @@ l[[1]]}, (Polygon[Append[#, mp]]&) /@
-	Partition[Append[l[[1]], l[[1, 1]]], 2, 1]]] /@ N[Map[PolyhedronData["Dodecahedron", "VertexCoordinates"][[#]]&,
-	Polygon /@ PolyhedronData["Dodecahedron", "FaceIndices"], {-1}], 100]]];
+dodecahedronTriangles = Block[
+	{faces, f, v},
+	faces = Polygon /@ PolyhedronData["Dodecahedron", "FaceIndices"];
+	f[l_] := Module[
+		{mp = 1 / 5 Plus @@ l[[1]]},
+		(Polygon[Append[#, mp]]&) /@ Partition[Append[l[[1]], l[[1, 1]]], 2, 1]
+	];
+	v = PolyhedronData["Dodecahedron", "VertexCoordinates"][[#]]&;
+	N[Flatten[f /@ N[Map[v, faces, {-1}], 100]]]
+];
 
 
 (* ::Text:: *)
@@ -73,7 +80,7 @@ Graphics3D[dodecahedronTriangles]
 (* For later use, we calculate the minimal and maximal distances of the dodecahedron surface to the origin. *)
 
 
-{Subscript[\[Rho], min], Subscript[\[Rho], max]} = {Min[#], Max[#]}&[Norm /@ Union[Level[dodecahedronTriangles, {-2}]]];
+{Subscript[\[Rho], min], Subscript[\[Rho], max]} = {Min[#], Max[#]}&[Norm /@ Union[Level[dodecahedronTriangles, {-2}]]]
 
 
 (* ::Section:: *)
@@ -81,27 +88,39 @@ Graphics3D[dodecahedronTriangles]
 
 
 (* ::Text:: *)
-(* This defines two L-shaped polygons. *)
-
-
-Ls[1] = Polygon /@ ( {{{0, 2}, {0, 0}, {2, 0}, {2, 1}, {1, 1}, {1, 2}, {0, 2}}, {{0, 3}, {2, 3}, {2, 1}, {1, 1}, {1, 2}, {0, 2}, {0, 3}}} / 2);
-
-
-(* ::Text:: *)
 (* The function splitLIntoFourLs subdivides each L into four smaller L's. *)
 
 
-splitLIntoFourLs[Polygon[l_]] := Polygon /@ (({{2 #1 + 2 #2, 4 #2, 2 #2 + 2 #3, #2 + #3 + 2 #5, 2 #2 + 2 #5, #1 + #2 + 2 #5, 2 #1 + 2 #2}, {#1 + #2 + 2 #6, 2 #2 + 2 #5, #2 + #3 + 2 #4, 2 #4 + 2 #5, 4 #5, 2 #5 + 2 #6, #1 + #2 + 2 #6}, {2 #2 + 2 #3, 4 #3, 4 #4, 2 #4 + 2 #5, #2 + #3 + 2 #4, #2 + #3 + 2 #5, 2 #2 + 2 #3}, {4 #6, 4 #1, 2 #1 + 2 #2, #1 + #2 + 2 #5, #1 + #2 + 2 #6, 2 #5 + 2 #6, 4 #6}} / 4)& @@ l)
+splitLIntoFourLs[Polygon[l_]] := Block[
+	{f},
+	f = {
+		{2 #1 + 2 #2, 4 #2, 2 #2 + 2 #3, #2 + #3 + 2 #5, 2 #2 + 2 #5, #1 + #2 + 2 #5, 2 #1 + 2 #2},
+		{#1 + #2 + 2 #6, 2 #2 + 2 #5, #2 + #3 + 2 #4, 2 #4 + 2 #5, 4 #5, 2 #5 + 2 #6, #1 + #2 + 2 #6},
+		{2 #2 + 2 #3, 4 #3, 4 #4, 2 #4 + 2 #5, #2 + #3 + 2 #4, #2 + #3 + 2 #5, 2 #2 + 2 #3},
+		{4 #6, 4 #1, 2 #1 + 2 #2, #1 + #2 + 2 #5, #1 + #2 + 2 #6, 2 #5 + 2 #6, 4 #6}
+	} / 4&;
+	Map[Polygon, f @@ l]
+];
+
+
+(* ::Text:: *)
+(* This defines two L-shaped polygons. *)
+
+
+Ls[1] = Map[Polygon , {
+	{{0, 2}, {0, 0}, {2, 0}, {2, 1}, {1, 1}, {1, 2}, {0, 2}},
+	{{0, 3}, {2, 3}, {2, 1}, {1, 1}, {1, 2}, {0, 2}, {0, 3}}
+} / 2];
 
 
 (* ::Text:: *)
 (*Here are the original two L-shaped polygons and the first three iterations of the splitting process.*)
 
 
-Ls[k_] := Ls[k] = Flatten[splitLIntoFourLs /@ Ls[k - 1], 1]
+Ls[k_] := Ls[k] = Flatten[splitLIntoFourLs /@ Ls[k - 1], 1];
 
 
-GraphicsRow[Table[Graphics[Line @@@ Ls[j]], {j, 1, 4}]]
+GraphicsRow[Table[Graphics[Line @@@ Ls[j], ImageSize -> Small], {j, 1, 5}]]
 
 
 (* ::Section:: *)
