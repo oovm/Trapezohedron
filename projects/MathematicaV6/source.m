@@ -6,17 +6,15 @@
 
 (* ::Subtitle:: *)
 (*Making the Mathematica 6 Surface-Textured Hyperbolic Dodecahedron *)
-(**)
 
 
-(* ::Author:: *)
-(* *)
-(*Michael Trott *)
+(* ::Item:: *)
+(* Michael Trott *)
 (*\[Copyright] Michael Trott 2007*)
 (**)
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Outline of the Procedure*)
 
 
@@ -44,7 +42,7 @@
 (*Step 1: The Regular Dodecahedron*)
 
 
-(* ::Commentary:: *)
+(* ::Text:: *)
 (*Here is a regular dodecahedron.*)
 
 
@@ -55,7 +53,7 @@ PolyhedronData["Dodecahedron"]
 (*Step 2: Dividing the Faces into Triangles*)
 
 
-(* ::Commentary:: *)
+(* ::Text:: *)
 (* This divides the faces of the dodecahedron into isosceles triangles. *)
 
 
@@ -64,14 +62,14 @@ dodecahedronTriangles = N[Flatten[Function[l, Module[{mp = 1 / 5 Plus @@ l[[1]]}
 	Polygon /@ PolyhedronData["Dodecahedron", "FaceIndices"], {-1}], 100]]];
 
 
-(* ::Commentary:: *)
+(* ::Text:: *)
 (*Here is the result.*)
 
 
 Graphics3D[dodecahedronTriangles]
 
 
-(* ::Commentary:: *)
+(* ::Text:: *)
 (* For later use, we calculate the minimal and maximal distances of the dodecahedron surface to the origin. *)
 
 
@@ -82,21 +80,21 @@ Graphics3D[dodecahedronTriangles]
 (*Step 3: Subdividing the L-Shaped Polygons*)
 
 
-(* ::Commentary:: *)
+(* ::Text:: *)
 (* This defines two L-shaped polygons. *)
 
 
 Ls[1] = Polygon /@ ( {{{0, 2}, {0, 0}, {2, 0}, {2, 1}, {1, 1}, {1, 2}, {0, 2}}, {{0, 3}, {2, 3}, {2, 1}, {1, 1}, {1, 2}, {0, 2}, {0, 3}}} / 2);
 
 
-(* ::Commentary:: *)
+(* ::Text:: *)
 (* The function splitLIntoFourLs subdivides each L into four smaller L's. *)
 
 
 splitLIntoFourLs[Polygon[l_]] := Polygon /@ (({{2 #1 + 2 #2, 4 #2, 2 #2 + 2 #3, #2 + #3 + 2 #5, 2 #2 + 2 #5, #1 + #2 + 2 #5, 2 #1 + 2 #2}, {#1 + #2 + 2 #6, 2 #2 + 2 #5, #2 + #3 + 2 #4, 2 #4 + 2 #5, 4 #5, 2 #5 + 2 #6, #1 + #2 + 2 #6}, {2 #2 + 2 #3, 4 #3, 4 #4, 2 #4 + 2 #5, #2 + #3 + 2 #4, #2 + #3 + 2 #5, 2 #2 + 2 #3}, {4 #6, 4 #1, 2 #1 + 2 #2, #1 + #2 + 2 #5, #1 + #2 + 2 #6, 2 #5 + 2 #6, 4 #6}} / 4)& @@ l)
 
 
-(* ::Commentary:: *)
+(* ::Text:: *)
 (*Here are the original two L-shaped polygons and the first three iterations of the splitting process.*)
 
 
@@ -110,8 +108,10 @@ GraphicsRow[Table[Graphics[Line @@@ Ls[j]], {j, 1, 4}]]
 (*Step 4: Mapping the L's onto the Dodecahedron*)
 
 
-(* ::Commentary:: *)
-(*The function mapPointToDodecahedronTriangle maps points to the triangle dodecahedronTriangle on the dodecahedron. The function mapLToDodecahedronTriangle maps a whole L-shaped polygon into the dodecahedron. The mapping is done such that the original double-L rectangle covers a triangle on the dodecahedron.*)
+(* ::Text:: *)
+(*The function mapPointToDodecahedronTriangle maps points to the triangle dodecahedronTriangle on the dodecahedron. *)
+(*The function mapLToDodecahedronTriangle maps a whole L-shaped polygon into the dodecahedron. *)
+(*The mapping is done such that the original double-L rectangle covers a triangle on the dodecahedron.*)
 
 
 mapPointToDodecahedronTriangle[{x_, y_}, dodecahedronTriangle : Polygon[{p1_, p2_, p3_}]] := 1 / 3 (p3 (3 - 2 y) + 2 (p1 - p1 x + p2 x) y)
@@ -120,7 +120,7 @@ mapPointToDodecahedronTriangle[{x_, y_}, dodecahedronTriangle : Polygon[{p1_, p2
 mapLToDodecahedronTriangle[L_, dodecahedronTriangle : Polygon[{p1_, p2_, p3_}] ] := Map[mapPointToDodecahedronTriangle[#, dodecahedronTriangle ]&, L, {2}]
 
 
-(* ::Commentary:: *)
+(* ::Text:: *)
 (*This lists all L's on the surface of the dodecahedron. (Use Ls[4] instead of Ls[2] to generate the full cover image.)*)
 
 
@@ -130,7 +130,7 @@ LsOnDodecahedron = Function[t, mapLToDodecahedronTriangle[#, t]& /@ Ls[4]] /@ do
 LsOnDodecahedron // Flatten // Length
 
 
-(* ::Commentary:: *)
+(* ::Text:: *)
 (*The L's are contracted slightly to display their boundaries more clearly.*)
 
 
@@ -144,21 +144,21 @@ Graphics3D[LsOnDodecahedron /. p_Polygon :> contractL[p]]
 (*Step 5: Applying a Radial Transformation and Thickening*)
 
 
-(* ::Commentary:: *)
+(* ::Text:: *)
 (* The function \[ScriptCapitalF] induces a radial transformation of the coordinates. *)
 
 
 \[ScriptCapitalF][\[Alpha]_, xyz_, f_] := \[Alpha] xyz f[(Sqrt[xyz.xyz] - Subscript[\[Rho], min]) / (Subscript[\[Rho], max] - Subscript[\[Rho], min])]
 
 
-(* ::Commentary:: *)
+(* ::Text:: *)
 (*Using f(r)\[Congruent]1 keeps the faces of the dodecahedron flat.*)
 
 
 \[ScriptF][r_] := 1;
 
 
-(* ::Commentary:: *)
+(* ::Text:: *)
 (*The function addHatToL adds a small "hat" onto each of the L's.*)
 
 
@@ -167,7 +167,7 @@ addHatToL[L : Polygon[l_]] :=
 		qs = (\[ScriptCapitalF][1, #, \[ScriptF]]&) /@ l;\[ScriptR] = Sqrt[#.#]&[Plus @@ l / 7];\[CurlyPhi] = (\[ScriptR] - Subscript[\[Rho], min]) / (Subscript[\[Rho], max] - Subscript[\[Rho], min]);mpF = \[ScriptCapitalF][1.06, mp, \[ScriptF]];rs = (\[ScriptCapitalF][1.06, mp + 0.6 (# - mp), \[ScriptF]]&) /@ l;{{extensionColor[\[CurlyPhi]], Specularity[extensionColor[\[CurlyPhi]], extensionSpecularExponent[\[CurlyPhi]]], extensionOpacity[\[CurlyPhi]], (Polygon[Append[#1, mpF]]&) /@ Partition[Append[rs, First[rs]], 2, 1]}, {baseColor[RandomReal[{\[CurlyPhi] - 0.2, \[CurlyPhi] + 0.2}]], Specularity[baseColor[\[CurlyPhi]], 2.3], baseOpacity[\[CurlyPhi]], Polygon[Join[#1, Reverse[#2]]]& @@@ Transpose[Partition[Append[#, First[#]], 2, 1]& /@ {qs, rs}]}}]
 
 
-(* ::Commentary:: *)
+(* ::Text:: *)
 (*The base and the extension of the hats are colored differently. In addition, to emphasize the edges of the dodecahedron, a color variation is added across its faces.*)
 
 
@@ -178,14 +178,14 @@ extensionOpacity[\[Xi]_] := Opacity[0.4 + 0.4\[Xi]];
 extensionSpecularExponent[\[Xi]_] := 2.5\[Xi];
 
 
-(* ::Commentary:: *)
+(* ::Text:: *)
 (* Here is the resulting surface-textured dodecahedron.*)
 
 
 Graphics3D[{EdgeForm[], addHatToL /@ Take[Flatten[Take[LsOnDodecahedron, All]], All]}, PlotRange -> All, Boxed -> False, ImageSize -> 300, Lighting -> {{"Ambient", RGBColor[0.2, 0, 0]}, {"Point", RGBColor[0.4, 0.4, 0.4], {2, 0, 2}}, {"Point", RGBColor[0.4, 0.4, 0.4], {2, 2, 2}}, {"Point", RGBColor[0.4, 0.4, 0.4], {0, 2, 2}}, {"Point", RGBColor[0.2, 0, 0], {-2, -2, -2}}}]
 
 
-(* ::Commentary:: *)
+(* ::Text:: *)
 (*To make the dodecahedron hyperbolic, we now extrude its vertices and intrude the centers of the faces. We use a new function f for the radial transformation.*)
 
 
@@ -195,7 +195,7 @@ Graphics3D[{EdgeForm[], addHatToL /@ Take[Flatten[Take[LsOnDodecahedron, All]], 
 Plot[\[ScriptF][r], {r, 0, Subscript[\[Rho], max]}]
 
 
-(* ::Commentary:: *)
+(* ::Text:: *)
 (*The next input generates a version of the cover image with less detail. *)
 
 
