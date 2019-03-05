@@ -1,61 +1,128 @@
 (* ::Package:: *)
 
+(* ::Chapter:: *)
+(*The Cover Image : Hyperbolic Platonic Bodies*)
+
+
 (* ::Text:: *)
-(*2.3 .1 0 The Cover Image : Hyperbolic Platonic Bodies*)
-(*               In this section, we construct the image on the cover of Wolfram' s book Mathematica : A System for Doing*)
-(*               Mathematics by Computer, Second Edition [523], the cover of The Mathematica Book, Third Edition [524], and*)
-(*               the cover of The Mathematica Book, Fourth Edition [525]. It involves a dodecahedron in hyperbolic geometry.*)
-(*                 As mentioned in Section 1.5 .8, it is not in the spirit of this book to go into the details of non - Euclidean geometry. (Non - Euclidean geometries are those in which Euclid' s fifth axiom, the parallel postulate, does not hold.)*)
-(*               Instead, we want to construct this body in a more heuristic way (it is actually not a "real" hyperbolic dodecahedron); for mathematical details on hyperbolic solids, see [270], [405], [271], [483], [410], [234], and [180].*)
-(*                 Let us start with Igor Rivin' s picture from the second edition book. We proceed in the following steps to*)
-(*               generate a picture that looks like the cover graphic of the second edition :*)
-(*                 \[Bullet] Using the package Graphics - Polyhedra -, we create the faces and vertices of a classical (Euclidean)*)
-(*               dodecahedron.*)
-(*                 \[Bullet] Because of the fivefold symmetry of the faces, we work on just 1110 of such a face, and triangulate into 18*)
-(*               subtriangles.*)
-(*                 \[Bullet] Depending on the distance of the vertices of these subtriangles from the center of an external sphere indenting*)
-(*               the face, we reduce their distances to the center of the dodecahedron. (This model of a sphere gives us some*)
-(*                    freedom in searching for a nice - looking result.)*)
-(*               \[Bullet] We reflect this 1110 part of a face around the line between the center of the face of the dodecahedron and the*)
-(*               center of the edge of the 1110 part of the face.*)
-(*                 \[Bullet] By rotating the resulting part of a face by i 2 rr I 5 (i = 1, 2, 3, 4 ), we obtain the complete face.*)
-(*                 \[Bullet] We determine the 11 rotation matrices that transform the constructed face into the other 11 faces.*)
-(*                 \[Bullet] Using these rotation matrices, we rotate the constructed warped face to create the other 11 faces.*)
-(*                 \[Bullet] Finally, we display the resulting 12 faces.*)
-(*                 We first read in the package.*)
-(*                 ln[ll := Needs ["Graphics'Polyhedra'"]*)
-(*                    We have seen this dodecahedron earlier. Here is the explicit list of its faces.*)
-(*                    ln[2] := Short [dode = Polyhedron [Dodecahedron] [ [1]] , 6]*)
-(*                    Out[2] // Short = {Polygon [ { { 0. 525731, 0. 3 81966, 0. 850651},*)
-(*                    {-0.200811, 0.618034, 0.850651}, {-0.649839, 0., 0.850651},*)
-(*                    {-0.200811, -0.618034, 0.850651}, {0.525731, -0.381966, 0.850651}}]'*)
-(*                    \[LeftGuillemet]10\[RightGuillemet], Polygon ({{0.200811, 0.618034, -0.850651}, \[LeftGuillemet]3\[RightGuillemet], {\[LeftGuillemet]1\[RightGuillemet]}}]}*)
-(*              We denote the center of the dodecahedron by pa, a vertex by pc, and the midpoint of an edge of the first*)
-(*              polygon of dode by pb.*)
-(*                 ln[3] := pa*)
-(*              pc*)
-(*              pb*)
-(*              Plus @@ dode [ [1, 1]] /5;*)
-(*              dode[ [1, 1, 1]];*)
-(*              (dode [ [1, 1, 2]] + dode [ [1, 1, 1]]) /2; *)
-(*              842 Three - Dimensional Graphics*)
-(*              We begin with the triangulation of a face. We implement this ourselves, although we could also use the command GeodesateFace in the package Graphics ' Polyhedra'. Here are the other points in the triangle*)
-(*              pa - pb - pc.*)
-(*                 ln[6] := ab \[Bullet] pb - pa; ac pc - pa; be \[Bullet] pc - pb;*)
-(*              pl = pa + ab/4; p2 \[Bullet] pa + ab/2; p3 \[Bullet] pa + 3 ab/4;*)
-(*              p4 ~ pa + ac/4; pS \[Bullet] pa + ac/2; p6 pb + bc/2;*)
-(*              p9 \[Bullet] pa + 3 ac/4; p7 \[Bullet] pb + 3 bc/4; p8 = p9 + (pc - p9)/2;*)
-(*              pll = p9 + (pb - p9)/2; plO = p9 + (pll - p9)/2;*)
-(*              pl2 = pll + (p6 - pll)/2; p13 = pll + (pc - pll)/2;*)
-(*              p14 = pS + (pb - pS)/2;*)
-(*              Now we construct a list of vertices.*)
-(*                ln[13 J = polys = {{pa, pl, p4}, {p4, pS, pl}, {pl, p2, pS},*)
-(*                    {pS, p2, p3}, {pS, p9, pll}, {pb, p6, pll},*)
-(*                    {p8, p9, plO}, {plO, pll, p13}, {pll, p12, p13},*)
-(*                    {p7, p12, p13}, {p6, p7, p12}, {p8, pc, p13},*)
-(*                    {pc, p7, p13}, {p8, plO, pl3}, {p3, pS, p14},*)
-(*                    {p3, pb, p14}, {pb, pll, p14}, {pS, pll, p14}};*)
-(*                 To better view this, we define a function shrink that shrinks the individual subtriangles.*)
+(*In this section, we construct the image on the cover of Wolfram's book Mathematica : A System for Doing Mathematics by Computer, Second Edition, the cover of The Mathematica Book, Third Edition, and the cover of The Mathematica Book, Fourth Edition.*)
+
+
+(* ::Text:: *)
+(*It involves a dodecahedron in hyperbolic geometry.*)
+
+
+(* ::Text:: *)
+(*It is not in the spirit of this book to go into the details of non-Euclidean geometry.*)
+(* (Non - Euclidean geometries are those in which Euclid' s fifth axiom, the parallel postulate, does not hold.)*)
+
+
+(* ::Text:: *)
+(*Instead, we want to construct this body in a more heuristic way.*)
+(*(it is actually not a "real" hyperbolic dodecahedron)*)
+
+
+(* ::Text:: *)
+(*Let us start with Igor Rivin' s picture from the second edition book.*)
+
+
+(* ::Text:: *)
+(*We proceed in the following steps to generate a picture that looks like the cover graphic of the second edition :*)
+
+
+(* ::Item:: *)
+(* Using the package Graphics`Polyhedra`, we create the faces and vertices of a classical (Euclidean) dodecahedron.*)
+
+
+(* ::Item:: *)
+(*Because of the fivefold symmetry of the faces, we work on just 1110 of such a face, and triangulate into 18 subtriangles.*)
+
+
+(* ::Item:: *)
+(*Depending on the distance of the vertices of these subtriangles from the center of an external sphere indenting the face, we reduce their distances to the center of the dodecahedron. *)
+(*(This model of a sphere gives us some freedom in searching for a nice - looking result.)*)
+
+
+(* ::Item:: *)
+(*We reflect this 1/10 part of a face around the line between the center of the face of the dodecahedron and the center of the edge of the 1110 part of the face.*)
+
+
+(* ::Item:: *)
+(*By rotating the resulting part of a face by i 2 rr I 5 (i = 1, 2, 3, 4 ), we obtain the complete face.*)
+
+
+(* ::Item:: *)
+(*We determine the 11 rotation matrices that transform the constructed face into the other 11 faces.*)
+
+
+(* ::Item:: *)
+(*Using these rotation matrices, we rotate the constructed warped face to create the other 11 faces.*)
+
+
+(* ::Item:: *)
+(*Finally, we display the resulting 12 faces.*)
+
+
+(* ::Text:: *)
+(*We first read in the package.*)
+
+
+Needs["Graphics`Polyhedra`"]
+
+
+(* ::Text:: *)
+(*We have seen this dodecahedron earlier. Here is the explicit list of its faces.*)
+
+
+Short[dode = Polyhedron[Dodecahedron][[1]], 6]
+
+
+(* ::Text:: *)
+(*We denote the center of the dodecahedron by pa, a vertex by pc, and the midpoint of an edge of the first polygon of dode by pb.*)
+
+
+pa = Plus @@ dode[[1, 1]] / 5;
+pc = dode[[1, 1, 1]];
+pb = (dode[[1, 1, 2]] + dode[[1, 1, 1]]) / 2;
+
+
+(* ::Text:: *)
+(*We begin with the triangulation of a face. *)
+
+
+(* ::Text:: *)
+(*We implement this ourselves, although we could also use the command GeodesateFace in the package Graphics`Polyhedra`. *)
+
+
+(* ::Text:: *)
+(*Here are the other points in the triangle pa-pb-pc.*)
+
+
+ab \[Bullet] pb - pa; ac pc - pa; be \[Bullet] pc - pb;
+pl = pa + ab / 4; p2 \[Bullet] pa + ab / 2; p3 \[Bullet] pa + 3 ab / 4;
+p4 ~ pa + ac / 4; pS \[Bullet] pa + ac / 2; p6 pb + bc / 2;
+p9 \[Bullet] pa + 3 ac / 4; p7 \[Bullet] pb + 3 bc / 4; p8 = p9 + (pc - p9) / 2;
+pll = p9 + (pb - p9) / 2; plO = p9 + (pll - p9) / 2;
+pl2 = pll + (p6 - pll) / 2; p13 = pll + (pc - pll) / 2;
+p14 = pS + (pb - pS) / 2;
+
+
+(* ::Text:: *)
+(*Now we construct a list of vertices.*)
+
+
+polys = {
+	{pa, pl, p4}, {p4, pS, pl}, {pl, p2, pS},
+	{pS, p2, p3}, {pS, p9, pll}, {pb, p6, pll},
+	{p8, p9, plO}, {plO, pll, p13}, {pll, p12, p13},
+	{p7, p12, p13}, {p6, p7, p12}, {p8, pc, p13},
+	{pc, p7, p13}, {p8, plO, pl3}, {p3, pS, p14},
+	{p3, pb, p14}, {pb, pll, p14}, {pS, pll, p14}
+};
+
+
+(* ::Text:: *)
+(*To better view this, we define a function shrink that shrinks the individual subtriangles.*)
 (*                    ln[l4] := shrink[poly_List, factor_] : \[Bullet]*)
 (*                    Module[{mp}, mp = (Plus @@ poly)/Length[poly];*)
 (*                    mp + factor (# - mp) & /@ poly]*)
@@ -69,7 +136,7 @@
 (*                  to the center (0, 0, 0} of the dodecahedron. We determine the size of the contraction factors using a sphere that*)
 (*            indents the face.*)
 (*               ln[16] = intersectionPoint [point , rad ] : =*)
-(*              Module[{zk}, {* sphere ; idpoi~t distance *)*)
+(*              Module[{zk}, {* sphere ; idpoi~t distance *) *)
 (*           zk = Sqrt[radA2 + (pc - pa) .(pc - pall + pa[[3]];*)
 (*                point*((-Sqrt[radA2 - point[[l]] A2 -*)
 (*                    point [ [2]] A2] + zk) /pc [ [3]]) l*)
@@ -88,7 +155,7 @@
 (*             intersectionPoint[ToExpression[\[Bullet]p\[Bullet] <> ToString[i]], 0.65],*)
 (*            {i, 14} 1*)
 (*             Here are the triangles that are analogous to poly, and that approximate the curved surface.*)
-(*              ln[22 J := polys 3 D = ( * just analogous to 2 D *)*)
+(*              ln[22 J := polys 3 D = ( * just analogous to 2 D *) * )
 (*          Map[Hold, (* r euse input from above *)*)
 (*            Cases[DownValues[In], HoldPattern[ :> (polys = ;)]],*)
 (*            {-1} 1 [[1, 2, 1, 2]] /. Hold[p_] :> Blockl {p},*)
