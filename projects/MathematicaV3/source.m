@@ -98,10 +98,10 @@ pb = (dode[[1, 1, 2]] + dode[[1, 1, 1]]) / 2;
 (*Here are the other points in the triangle pa-pb-pc.*)
 
 
-ab \[Bullet] pb - pa; ac pc - pa; be \[Bullet] pc - pb;
-pl = pa + ab / 4; p2 \[Bullet] pa + ab / 2; p3 \[Bullet] pa + 3 ab / 4;
-p4 ~ pa + ac / 4; pS \[Bullet] pa + ac / 2; p6 pb + bc / 2;
-p9 \[Bullet] pa + 3 ac / 4; p7 \[Bullet] pb + 3 bc / 4; p8 = p9 + (pc - p9) / 2;
+ab = pb - pa; ac pc - pa; be \[Bullet] pc - pb;
+pl = pa + ab / 4; p2 = pa + ab / 2; p3 \[Bullet] pa + 3 ab / 4;
+p4 = pa + ac / 4; pS = pa + ac / 2; p6 pb + bc / 2;
+p9 = pa + 3 ac / 4; p7 = pb + 3 bc / 4; p8 = p9 + (pc - p9) / 2;
 pll = p9 + (pb - p9) / 2; plO = p9 + (pll - p9) / 2;
 pl2 = pll + (p6 - pll) / 2; p13 = pll + (pc - pll) / 2;
 p14 = pS + (pb - pS) / 2;
@@ -123,39 +123,61 @@ polys = {
 
 (* ::Text:: *)
 (*To better view this, we define a function shrink that shrinks the individual subtriangles.*)
-(*                    ln[l4] := shrink[poly_List, factor_] : \[Bullet]*)
-(*                    Module[{mp}, mp = (Plus @@ poly)/Length[poly];*)
-(*                    mp + factor (# - mp) & /@ poly]*)
-(*                    Here are the individual subtriangles in the first 1110 part of a face viewed from the top.*)
-(*                    ln[15] := Show[Graphics3D[Polygon /@ (shrink[#, 0.7] & /@ polys)],*)
-(*                    ViewPoint -> {0, 0, 3}, Axes -> {True, True, False}];*)
-(*                 Now, we must use these planar triangles, consisting of small subtriangles, to construct the inward - curved surface*)
-(*                   of the hyperbolic dodecahedron. We do this by pulling the vertices of the subtriangles toward the center. The*)
-(*                   boundary vertex pc (a vertex of the initial dodecahedron) remains in its original position. To ensure that the*)
-(*                   resulting curved edges can later be joined without problems, we move the points along the lines connecting them*)
-(*                  to the center (0, 0, 0} of the dodecahedron. We determine the size of the contraction factors using a sphere that*)
-(*            indents the face.*)
-(*               ln[16] = intersectionPoint [point , rad ] : =*)
-(*              Module[{zk}, {* sphere ; idpoi~t distance *) *)
-(*           zk = Sqrt[radA2 + (pc - pa) .(pc - pall + pa[[3]];*)
-(*                point*((-Sqrt[radA2 - point[[l]] A2 -*)
-(*                    point [ [2]] A2] + zk) /pc [ [3]]) l*)
-(*                 Here, rad denotes the radius of this sphere. It must be greater than the following number. *)
-(*                    2.3 Some More Complicated Three - Dimensional Graphics*)
-(*                   ln[ll] := Sqrt [ (pc - pal . (pc - pa)]*)
-(*           Ou1[17] = 0.649839*)
-(*           843*)
-(*           Here are the vertices on the concave surface formed from the vertices of the subtriangles. In order to avoid*)
-(*           writing 14 equations in the following input, we use the construction Evaluate [ToExpression [ 11 \[Bullet] \[Bullet] \[Bullet] 11 <>*)
-(*                   ToString [i]]].*)
-(*               ln[18] := p3da intersectionPoint[pa, 0.65];*)
-(*           p3db \[Bullet] intersectionPoint[pb, 0.65];*)
-(*           p3dc = intersectionPoint[pc, 0.65];*)
-(*           Do[Evaluate[ToExpression["p3d" <> ToString[i]]] \[Bullet]*)
-(*             intersectionPoint[ToExpression[\[Bullet]p\[Bullet] <> ToString[i]], 0.65],*)
-(*            {i, 14} 1*)
-(*             Here are the triangles that are analogous to poly, and that approximate the curved surface.*)
-(*              ln[22 J := polys 3 D = ( * just analogous to 2 D *) * )
+
+
+shrink[poly_List, factor_] : \[Bullet]                    Module[
+	{mp}, mp = (Plus @@ poly)/Length[poly];
+	mp + factor (# - mp) & /@ poly
+]
+
+
+(* ::Text:: *)
+(*Here are the individual subtriangles in the first 1110 part of a face viewed from the top.*)
+
+
+Show[Graphics3D[Polygon /@ (shrink[#, 0.7] & /@ polys)],
+	ViewPoint -> {0, 0, 3}, Axes -> {True, True, False}];
+
+
+(* ::Text:: *)
+(*Now, we must use these planar triangles, consisting of small subtriangles, to construct the inward - curved surface of the hyperbolic dodecahedron. We do this by pulling the vertices of the subtriangles toward the center. The boundary vertex pc (a vertex of the initial dodecahedron) remains in its original position. To ensure that the resulting curved edges can later be joined without problems, we move the points along the lines connecting them to the center (0, 0, 0} of the dodecahedron. We determine the size of the contraction factors using a sphere that indents the face.*)
+
+
+intersectionPoint [point , rad ] : =             Module[
+	{zk},
+	{* sphere ; idpoi~t distance *)
+zk = Sqrt[radA2 + (pc - pa) .(pc - pall + pa[[3]];
+point*((-Sqrt[radA2 - point[[l]] A2 -
+	point [ [2]] A2] + zk) /pc [ [3]]) l
+]
+
+
+(* ::Text:: *)
+(*Here, rad denotes the radius of this sphere. It must be greater than the following number. 2.3 Some More Complicated Three - Dimensional Graphics*)
+
+
+Sqrt [ (pc - pal . (pc - pa)]
+
+
+(* ::Text:: *)
+(* Here are the vertices on the concave surface formed from the vertices of the subtriangles. In order to avoid writing 14 equations in the following input, we use the construction Evaluate [ToExpression [ 11 \[Bullet] \[Bullet] \[Bullet] 11 <>*)
+(*                         ToString [i]]].*)
+
+
+p3da intersectionPoint[pa, 0.65];
+p3db \[Bullet] intersectionPoint[pb, 0.65];
+p3dc = intersectionPoint[pc, 0.65];
+Do[Evaluate[ToExpression["p3d" <> ToString[i]]] \[Bullet]
+	intersectionPoint[ToExpression[\[Bullet]p\[Bullet] <> ToString[i]], 0.65],
+	{i, 14} 1
+
+
+(* ::Text:: *)
+(*Here are the triangles that are analogous to poly, and that approximate the curved surface.*)
+
+
+(* ::Text:: *)
+(* polys 3 D = (* just analogous to 2 D *) *)
 (*          Map[Hold, (* r euse input from above *)*)
 (*            Cases[DownValues[In], HoldPattern[ :> (polys = ;)]],*)
 (*            {-1} 1 [[1, 2, 1, 2]] /. Hold[p_] :> Blockl {p},*)
@@ -248,9 +270,6 @@ polys = {
 (*                    The last Matherrultica input showed how Matherrultica code should not be formatted; it is rather unreadable in*)
 (*                    this form. The way this codes works can be understood better by looking at it in Full Form and arranging the*)
 (*                    brackets carefully. *)
-
-
-(* ::Text:: *)
 (*In the last function, the main work was the recursive subdivision of the right - angled triangles in two right - angled*)
 (*                    triangles. We extract this part and call it orthogonalSubdi vision.*)
 (*                    ln[40] := orthogonalSubdivision [1 _, n_] : =*)
@@ -322,9 +341,6 @@ polys = {
 (*By using one - letter variables for the built - in functions that are used more than one time, we can shorten this*)
 (*code, although this does not increase its readability. So the following code is another example of how we should*)
 (*not write and format Mathematica programs.*)
-
-
-(* ::Text:: *)
 (*Now the individual triangular pieces appear more naturally colored.*)
 (*    ln[Sl] := HyperbolicDodecahedron[2, 3, 0.89, 0.72];*)
 (*With only a few changes to the above - developed code, we can write a code to display the other hyperbolic*)
