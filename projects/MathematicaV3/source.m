@@ -174,83 +174,126 @@ Do[Evaluate[ToExpression["p3d" <> ToString[i]]] \[Bullet]
 
 (* ::Text:: *)
 (*Here are the triangles that are analogous to poly, and that approximate the curved surface.*)
+	
+	
+	polys 3 D = (* just analogous to 2 D *)
+		Map[Hold, (* r euse input from above *)
+			Cases[DownValues[In], HoldPattern[ :> (polys = ;)]],
+{-1} 1 [[1, 2, 1, 2]] /. Hold[p_] :> Blockl {p},
+ToExpression[Stringinsert[ToString[p], "3d", 2]]];
 
 
 (* ::Text:: *)
-(* polys 3 D = (* just analogous to 2 D *) *)
-(*          Map[Hold, (* r euse input from above *)*)
-(*            Cases[DownValues[In], HoldPattern[ :> (polys = ;)]],*)
-(*            {-1} 1 [[1, 2, 1, 2]] /. Hold[p_] :> Blockl {p},*)
-(*            ToExpression[Stringinsert[ToString[p], "3d", 2]]];*)
-(*          Here is what they look like. (We name them firstPart.)*)
-(*          ln[23 l := firstPart = Show [Graphics3D [Polygon /@ polys3D] ,*)
-(*              PlotRange -> All, Axes -> True];*)
-(*           To convert the first 1110 face into the first 1/5 face, we need to reflect in the "line" pa - pc. Because pa, pb, and*)
-(*            pc all lie in a plane parallel to the x, y - plane, this is relatively simple.*)
-(*             ln[24 l := reflect[{pa_, pc_}, point_] :=*)
-(*                Module[{pa2, pc2, point2, projection, perpendicular},*)
-(*                 pa2 = Drop[pa, -1]; pc2 = Drop[pc, -1];*)
-(*                 point2 = Drop[point, -1];*)
-(*                 (* divide in orthogonal and paral l el compo nents *)*)
-(*                 projection = 1/(pc2 - pa2). (pc2 - pa2)**)
-(*                   (pc2 - pa2) . (point2 - pa2) (pc2 - pa2) ;*)
-(*                 perpendicular = (point2 - pa2) - projection;*)
-(*                 N[Append[projection - perpendicular, point[[3 lllll*)
-(*                    Here is the second part, produced by reflection of firstPar t by applying reflect.*)
-(*                    ln[25 J := secondPart = Show [Graphics3D [Polygon /@*)
-(*                    Map[ref1ect[{p3da, p3db}, #] &, polys3D, {2} 111; *)
-(*                    844*)
-(*                    We now put first Part and secondPart together to get part [5].*)
-(*                    ln[26) := part [5] \[Bullet] Join [firstPart [ [1]], secondPart [ [1]]];*)
-(*       Show[Graphics3D[part[S]]];*)
-(*       Three - Dimensional Graphics*)
-(*       We now define rotation matrices rna t [ i] to construct the four missing parts of the first face.*)
-(*         ln[28) := Do [mat [i] = { { Cos [i 2 Pi/5] , Sin [i 2 Pi/5] , 0},*)
-(*          {-Sin[i 2 Pi/5], Cos[i 2 Pi/5], 0},*)
-(*          { 0, 0, 1}} // N, {i, 1, 4}]*)
-(*     Next we use mat [i] to rotate part [5] . We call the union of all five parts face [1].*)
-(*       ln[29) := Do[part[i] = Map[(mat[i].#) & :, part[S], {3}], {i, 4} l*)
-(*      face[1] \[Bullet] Flatten[Tab1e[part[i], {i, S} ll;*)
-(*        Show[Graphics3D[face[1]]];*)
-(*        To implement the rotations of the first face into the positions of the remaining 11 faces, we need to do a little*)
-(*         more. Again, we need to find 3 x 3 rotation matrices. We do this by moving three vertices of the first face of our*)
-(*           classical (Platonic) dodecahedron to coincide with three vertices of each of the 11 faces. This results in a system*)
-(*           of equations in nine variables whose solution gives the desired rotation matrices. *)
-(*            2.3 Some More Complicated Three - Dimensional Graphics*)
-(*           ln[32]~ A = {{all [i] , a12 [i] , a13 [i]}, {a21 [i], a22 (i], a23 [i]},*)
-(*  {a31 [i], a32 [i], a33 [i]} };*)
-(*Do[~ [i] = (A I.*)
-(*     Solve[ (* solve the equat ions *)*)
-(*      Flatten[Tab1e[(* make e q uati o ns by rotating points * )*)
-(*         Thread[(* the rotation matrix to be determined * )*)
-(*                A.dode[[1, 1, j]] == dode[[i, 1, j]]], {j, 3}11.*)
-(*              Flatten [A]]) [ [1]], {i, 12}1*)
-(*             'R [ 7] is one of these rotation matrices.*)
-(*             ln[34]:~ ~ [ 7]*)
-(*            Out[34]~ { { - 0. 0527864 , 0. 688191, 0. 723 607 },*)
-(*              {0.688191, -0.5, 0.525731 }, {0.723607, 0 . 525731, -0.447 214}}*)
-(*            We now rotate face [ 1] into the other positions.*)
-(*             ln[35J~ Do [face [i] = Map [ (~ [i]. I+)&:, face [1], {3}], {i, 2, 12}1*)
-(*                  We look at the resulting object.*)
-(*                   ln[36 Show[Graphics3D[Table[face[i], {i, 12}11. Boxed-> False];*)
-(*                    845*)
-(*                    Using the default viewpoint, we cannot see all surfaces, so we modify the display by showing the visible*)
-(*                    surfaces of the dodecahedron in color; the invisible ones are not displayed at all.*)
-(*                    ln[37J:= Needs ["Graphics'Colors' \[Bullet]]*)
-(*                    ln[JBJ ~ Show [Graphics 3D [ ( * o nly t h e visible f aces * )*)
-(*                    {EdgeForm[Thickness[0.0001]],*)
-(*                    {OrangeRed, face[l]}, {LightBlue, face[2]}, {Yellow, face[6]},*)
-(*                    {Green, face[S]}, {Violet, face[10]}, {Orange, face[l1l}}l,*)
-(*                    Boxed-> False, Lighting-> False]; *)
-(*                    846 Three-Dimensional Graphics*)
-(*                    Now, let us deal with the cover of the third edition. It is of course not necessary to first subdivide and deform a*)
-(*                    face, and then rotate it into the positions of the other surfaces. We could just as well have performed both*)
-(*                    operations (subdivision and deformation) on every face individually. This approach leads to the following very*)
-(*                    short implementation. The subdivision is done iteratively, and the resulting surfaces are displayed with finite*)
-(*                    thickness. The variables in the formal functions are shortened to $ (a little bit in violation of the general*)
-(*                    convention). (By increasing the number of iteration steps of Nest, which is currently three, we can get an*)
-(*                    arbitrarily fine subdivision of the faces of the dodecahedron.)*)
-(*                    ln[39]:= Show[Graphics3D [{EdgeForm[{GrayLevel [0 .25],*)
+(*Here is what they look like. (We name them firstPart.)*)
+
+
+ln[23 l := firstPart = Show [Graphics3D [Polygon /@ polys3D] ,
+	PlotRange -> All, Axes -> True];
+
+
+(* ::Text:: *)
+(*To convert the first 1110 face into the first 1/5 face, we need to reflect in the "line" pa - pc. Because pa, pb, and pc all lie in a plane parallel to the x, y - plane, this is relatively simple.*)
+
+
+ln[24 l := reflect[{pa_, pc_}, point_] :=
+	Module[{pa2, pc2, point2, projection, perpendicular},
+		pa2 = Drop[pa, -1]; pc2 = Drop[pc, -1];
+		point2 = Drop[point, -1];
+		(* divide in orthogonal and paral l el compo nents *)
+		projection = 1/(pc2 - pa2). (pc2 - pa2)*
+			(pc2 - pa2) . (point2 - pa2) (pc2 - pa2) ;
+		perpendicular = (point2 - pa2) - projection;
+		N[Append[projection - perpendicular, point[[3 lllll
+		
+		
+		(* ::Text:: *)
+		(*  Here is the second part, produced by reflection of firstPar t by applying reflect.*)
+			
+			
+			secondPart = Show [Graphics3D [Polygon /@
+				Map[ref1ect[{p3da, p3db}, #] &, polys3D, {2} 111;
+				
+				
+				(* ::Text:: *)
+				(* We now put first Part and secondPart together to get part [5].*)
+				
+				
+				part [5] \[Bullet] Join [firstPart [ [1]], secondPart [ [1]]];
+				Show[Graphics3D[part[S]]];
+				
+				
+				(* ::Text:: *)
+				(*We now define rotation matrices rnat [ i] to construct the four missing parts of the first face.*)
+				
+				
+				Do [mat [i] = { { Cos [i 2 Pi/5] , Sin [i 2 Pi/5] , 0},
+					{-Sin[i 2 Pi/5], Cos[i 2 Pi/5], 0},
+					{ 0, 0, 1}} // N, {i, 1, 4}]
+				
+				
+				(* ::Text:: *)
+				(*   Next we use mat [i] to rotate part [5] . We call the union of all five parts face [1].*)
+					
+					
+					Do[part[i] = Map[(mat[i].#) & :, part[S], {3}], {i, 4} l
+						face[1] \[Bullet] Flatten[Tab1e[part[i], {i, S} ll;
+						Show[Graphics3D[face[1]]];
+						
+						
+						(* ::Text:: *)
+						(*To implement the rotations of the first face into the positions of the remaining 11 faces, we need to do a little more. Again, we need to find 3 x 3 rotation matrices. We do this by moving three vertices of the first face of our classical (Platonic) dodecahedron to coincide with three vertices of each of the 11 faces. This results in a system of equations in nine variables whose solution gives the desired rotation matrices. *)
+						
+						
+						A = {{all [i] , a12 [i] , a13 [i]}, {a21 [i], a22 (i], a23 [i]},
+{a31 [i], a32 [i], a33 [i]} };
+Do[~ [i] = (A I.
+	Solve[ (* solve the equat ions *)
+		Flatten[Tab1e[(* make e q uati o ns by rotating points * )
+         Thread[(* the rotation matrix to be determined * )
+                A.dode[[1, 1, j]] == dode[[i, 1, j]]], {j, 3}11.
+              Flatten [A]]) [ [1]], {i, 12}1
+             'R [ 7] is one of these rotation matrices.
+
+
+(* ::Text:: *)
+(* We now rotate face[1] into the other positions.*)
+
+
+Do[face [i] = Map [ (~ [i]. I+)&:, face [1], {3}], {i, 2, 12}1
+
+
+(* ::Text:: *)
+(* We look at the resulting object.*)
+
+
+Show[Graphics3D[Table[face[i], {i, 12}11. Boxed-> False];
+
+
+(* ::Text:: *)
+(*Using the default viewpoint, we cannot see all surfaces, so we modify the display by showing the visible surfaces of the dodecahedron in color; the invisible ones are not displayed at all.*)
+
+
+Needs ["Graphics'Colors' \[Bullet]]
+
+
+ Show [Graphics 3D [ ( * o nly t h e visible f aces * )
+                    {EdgeForm[Thickness[0.0001]],
+                    {OrangeRed, face[l]}, {LightBlue, face[2]}, {Yellow, face[6]},
+                    {Green, face[S]}, {Violet, face[10]}, {Orange, face[l1l}}l,
+                    Boxed-> False, Lighting-> False];
+
+
+(* ::Text:: *)
+(*Now, let us deal with the cover of the third edition. It is of course not necessary to first subdivide and deform a face, and then rotate it into the positions of the other surfaces. We could just as well have performed both operations (subdivision and deformation) on every face individually. *)
+
+
+(* ::Text:: *)
+(*This approach leads to the following very short implementation. The subdivision is done iteratively, and the resulting surfaces are displayed with finite thickness. The variables in the formal functions are shortened to $ (a little bit in violation of the general convention). *)
+(*  (By increasing the number of iteration steps of Nest, which is currently three, we can get an arbitrarily fine subdivision of the faces of the dodecahedron.)*)
+
+
+(* ::Text:: *)
+(*Show[Graphics3D [{EdgeForm[{GrayLevel [0 .25],*)
 (*                    Thickness[0.001l}l,SurfaceColor[GrayLevel[0.8],*)
 (*                    RGBColor[1,0.4,1],3l,{Polygon/@#l,Polygon/@#2,*)
 (*                    MapThread[Polygon[Join[#1,#2]]&,{Reverse/@Flatten[*)
