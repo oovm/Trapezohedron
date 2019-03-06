@@ -74,16 +74,16 @@ Needs["Graphics`Polyhedra`"]
 (*We have seen this dodecahedron earlier. Here is the explicit list of its faces.*)
 
 
-Short[dode = Polyhedron[Dodecahedron][[1]], 6]
+Short[dode = PolyhedronData["Dodecahedron"][[1]], 6]
 
 
 (* ::Text:: *)
 (*We denote the center of the dodecahedron by pa, a vertex by pc, and the midpoint of an edge of the first polygon of dode by pb.*)
 
 
-pa = Plus @@ dode[[1, 1]] / 5;
-pc = dode[[1, 1, 1]];
-pb = (dode[[1, 1, 2]] + dode[[1, 1, 1]]) / 2;
+pa = Plus @@ dode[[1, 1]] / 5
+pc = dode[[1, 1, 1]]
+pb = (dode[[1, 1, 2]] + dode[[1, 1, 1]]) / 2
 
 
 (* ::Text:: *)
@@ -98,13 +98,13 @@ pb = (dode[[1, 1, 2]] + dode[[1, 1, 1]]) / 2;
 (*Here are the other points in the triangle pa-pb-pc.*)
 
 
-ab = pb - pa; ac pc - pa; be \[Bullet] pc - pb;
-pl = pa + ab / 4; p2 = pa + ab / 2; p3 \[Bullet] pa + 3 ab / 4;
-p4 = pa + ac / 4; pS = pa + ac / 2; p6 pb + bc / 2;
-p9 = pa + 3 ac / 4; p7 = pb + 3 bc / 4; p8 = p9 + (pc - p9) / 2;
-pll = p9 + (pb - p9) / 2; plO = p9 + (pll - p9) / 2;
-pl2 = pll + (p6 - pll) / 2; p13 = pll + (pc - pll) / 2;
-p14 = pS + (pb - pS) / 2;
+ab = pb - pa; ac=pc - pa; bc=pc - pb;
+p1 = pa + ab / 4; p2 = pa + ab / 2; p3 = pa + 3 ab / 4;
+p4 = pa + ac / 4; p5 = pa + ac / 2; p6=pb + bc / 2;
+p7 = pb + 3 bc / 4; p8 :=p8= p9 + (pc - p9) / 2;p9 = pa + 3 ac / 4;
+p10 := p10=p9 + (p11 - p9) / 2;p11 = p9 + (pb - p9) / 2;
+p12 = p11 + (p6 - p11) / 2; p13 = p11 + (pc - p11) / 2;
+p14 = p5 + (pb - p5) / 2;
 
 
 (* ::Text:: *)
@@ -112,12 +112,12 @@ p14 = pS + (pb - pS) / 2;
 
 
 polys = {
-	{pa, pl, p4}, {p4, pS, pl}, {pl, p2, pS},
-	{pS, p2, p3}, {pS, p9, pll}, {pb, p6, pll},
-	{p8, p9, plO}, {plO, pll, p13}, {pll, p12, p13},
+	{pa, p1, p4}, {p4, p5, p1}, {p1, p2, p5},
+	{p5, p2, p3}, {p5, p9, p11}, {pb, p6, p11},
+	{p8, p9, p10}, {p10, p11, p13}, {p11, p12, p13},
 	{p7, p12, p13}, {p6, p7, p12}, {p8, pc, p13},
-	{pc, p7, p13}, {p8, plO, pl3}, {p3, pS, p14},
-	{p3, pb, p14}, {pb, pll, p14}, {pS, pll, p14}
+	{pc, p7, p13}, {p8, p10, p13}, {p3, p5, p14},
+	{p3, pb, p14}, {pb, p11, p14}, {p5, p11, p14}
 };
 
 
@@ -125,8 +125,8 @@ polys = {
 (*To better view this, we define a function shrink that shrinks the individual subtriangles.*)
 
 
-shrink[poly_List, factor_] : \[Bullet]                    Module[
-	{mp}, mp = (Plus @@ poly)/Length[poly];
+shrink[poly_List, factor_] :=Module[
+	{mp = (Plus @@ poly)/Length[poly]},
 	mp + factor (# - mp) & /@ poly
 ]
 
@@ -135,20 +135,21 @@ shrink[poly_List, factor_] : \[Bullet]                    Module[
 (*Here are the individual subtriangles in the first 1110 part of a face viewed from the top.*)
 
 
-Show[Graphics3D[Polygon /@ (shrink[#, 0.7] & /@ polys)],
-	ViewPoint -> {0, 0, 3}, Axes -> {True, True, False}];
+Graphics3D[
+	Polygon /@ (shrink[#, 0.7] & /@ polys),
+	ViewPoint -> {0, 0, 3}, Axes -> {True, True, False}
+]
 
 
 (* ::Text:: *)
 (*Now, we must use these planar triangles, consisting of small subtriangles, to construct the inward - curved surface of the hyperbolic dodecahedron. We do this by pulling the vertices of the subtriangles toward the center. The boundary vertex pc (a vertex of the initial dodecahedron) remains in its original position. To ensure that the resulting curved edges can later be joined without problems, we move the points along the lines connecting them to the center (0, 0, 0} of the dodecahedron. We determine the size of the contraction factors using a sphere that indents the face.*)
 
 
-intersectionPoint [point , rad ] : =             Module[
+intersectionPoint[point_, rad_] :=Module[
 	{zk},
-	{* sphere ; idpoi~t distance *)
-zk = Sqrt[radA2 + (pc - pa) .(pc - pall + pa[[3]];
-point*((-Sqrt[radA2 - point[[l]] A2 -
-	point [ [2]] A2] + zk) /pc [ [3]]) l
+(* sphere midpoint distance *)
+	zk = Sqrt[rad^2 + (pc - pa).(pc - pa)] + pa[[3]];
+	point*((-Sqrt[rad^2 - point[[1]]^2 -point [ [2]]^2] + zk) /pc [[3]])
 ]
 
 
@@ -156,7 +157,7 @@ point*((-Sqrt[radA2 - point[[l]] A2 -
 (*Here, rad denotes the radius of this sphere. It must be greater than the following number. 2.3 Some More Complicated Three - Dimensional Graphics*)
 
 
-Sqrt [ (pc - pal . (pc - pa)]
+Sqrt[(pc - pa).(pc - pa)]
 
 
 (* ::Text:: *)
@@ -170,8 +171,6 @@ p3dc = intersectionPoint[pc, 0.65];
 Do[Evaluate[ToExpression["p3d" <> ToString[i]]] \[Bullet]
 	intersectionPoint[ToExpression[\[Bullet]p\[Bullet] <> ToString[i]], 0.65],
 	{i, 14} 1
-
-
 
 
 (* ::Text:: *)
@@ -456,7 +455,6 @@ HyperbolicDodecahedron[2, 3, 0.89, 0.72];
 (*For the sake of elegance, we make some of the calculations inside the Module more efficient as compared with the above implementation (which was easier to present and discuss).*)
 
 
-
    ln[52] := Needs [ 0 Graphics' Polyhedra' "];
    ln[S3]:= Remove [HyperbolicPlatonicSolid] ;
    HyperbolicPlatonicSolid[
@@ -532,7 +530,6 @@ Table[face[i], {i, numFaces}J}J, opts, Boxed-> False]]
 
 (* ::Text:: *)
 (*Here are the remaining hyperbolic Platonic bodies, each indented differently. (Because of the different forms of the bodies, SphericalRegion - > True does not help to make all bodies of the same size; the bounding box not shown will always fit into the displayed volume.)*)
-
 
 
 ln[55]:= Show [ GraphicsArray [
