@@ -4,6 +4,10 @@
 (*The Cover Image : Hyperbolic Platonic Bodies*)
 
 
+(* ::Section::Closed:: *)
+(*Introduce*)
+
+
 (* ::Text:: *)
 (*In this section, we construct the image on the cover of Wolfram's book Mathematica : A System for Doing Mathematics by Computer, Second Edition, the cover of The Mathematica Book, Third Edition, and the cover of The Mathematica Book, Fourth Edition.*)
 
@@ -28,6 +32,10 @@
 
 (* ::Text:: *)
 (*We proceed in the following steps to generate a picture that looks like the cover graphic of the second edition :*)
+
+
+(* ::Section::Closed:: *)
+(*Steps*)
 
 
 (* ::Item:: *)
@@ -63,15 +71,15 @@
 (*Finally, we display the resulting 12 faces.*)
 
 
-(* ::Text:: *)
-(*We first read the data.*)
+(* ::Section:: *)
+(*Start*)
 
 
 (* ::Text:: *)
 (*We have seen this dodecahedron earlier. Here is the explicit list of its faces.*)
 
 
-dode = First@PolyhedronData["Dodecahedron","Faces","Polygon"];
+dode = First@PolyhedronData["Dodecahedron", "Faces", "Polygon"];
 
 
 (* ::Text:: *)
@@ -124,7 +132,7 @@ polys = {
 
 shrink[poly_List, factor_] := Module[
 	{mp = (Plus @@ poly) / Length[poly]},
-	mp + factor (# - mp) & /@ poly
+	mp + factor*(# - mp)&/@ poly
 ];
 
 
@@ -134,8 +142,8 @@ shrink[poly_List, factor_] := Module[
 
 Graphics3D[
 	Polygon /@ (shrink[#, 0.7] & /@ polys),
-	ViewPoint -> {0, 0, 3}, Boxed->False,
-	ImageSize->Small
+	ViewPoint -> {0, 0, 3}, Boxed -> False,
+	ImageSize -> Small
 ]
 
 
@@ -143,9 +151,9 @@ Graphics3D[
 (*Now, we must use these planar triangles, consisting of small subtriangles, to construct the inward - curved surface of the hyperbolic dodecahedron. We do this by pulling the vertices of the subtriangles toward the center. The boundary vertex pc (a vertex of the initial dodecahedron) remains in its original position. To ensure that the resulting curved edges can later be joined without problems, we move the points along the lines connecting them to the center (0, 0, 0} of the dodecahedron. We determine the size of the contraction factors using a sphere that indents the face.*)
 
 
+(* sphere midpoint distance *)
 intersectionPoint[point_, rad_] := Module[
-	{zk},(* sphere midpoint distance *)
-	zk = Sqrt[rad^2 + (pc - pa).(pc - pa)] + pa[[3]];
+	{zk = Sqrt[rad^2 + (pc - pa).(pc - pa)] + pa[[3]]},
 	point * ((-Sqrt[rad^2 - point[[1]]^2 - point[[2]]^2] + zk) / pc[[3]])
 ];
 
@@ -161,102 +169,105 @@ N@Sqrt[(pc - pa).(pc - pa)]
 (*Here are the vertices on the concave surface formed from the vertices of the subtriangles. In order to avoid writing 14 equations in the following input.*)
 
 
-p3da=intersectionPoint[pa, 0.65]
-p3db=intersectionPoint[pb, 0.65]
-p3dc=intersectionPoint[pc, 0.65]
+p3da = intersectionPoint[pa, 0.65]
+p3db = intersectionPoint[pb, 0.65]
+p3dc = intersectionPoint[pc, 0.65]
 
 
-Do[
-	Evaluate[ToExpression["p3d" <> ToString[i]]]=
-		intersectionPoint[ToExpression["p" <> ToString[i]], 0.65],
-	{i, 14}
-]
+Do[Set[
+	Evaluate[ToExpression["p3d" <> ToString[i]]],
+	intersectionPoint[ToExpression["p" <> ToString[i]], 0.65]
+],{i, 14}];
 
 
 (* ::Text:: *)
 (*Here are the triangles that are analogous to poly, and that approximate the curved surface.*)
 
 
-(* just analogous to 2 D *)
-polys3D =  Map[
+(* just analogous to 2D *)
+polys3D = Map[
 	Hold, (* r euse input from above *)
-	Cases[DownValues[In], HoldPattern[_:> (polys =_;)]],
-	{-1}][[1, 2, 1, 2]] /. Hold[p_] :> Block[
+	Cases[DownValues[In], HoldPattern[_ :> (polys = _;)]], {-1}
+][[1, 2, 1, 2]] /. Hold[p_] :> Block[
 	{p},
 	ToExpression[StringInsert[ToString[p], "3d", 2]]
-]
+];
 
 
 (* ::Text:: *)
 (*Here is what they look like. (We name them firstPart.)*)
 
 
-ln[23 l := firstPart = Show [Graphics3D [Polygon /@ polys3D] ,
-	PlotRange -> All, Axes -> True];
-
-
+firstPart =Graphics3D[
+	Polygon /@ Re@polys3D,
+	PlotRange -> All, Axes -> True
+]
 
 
 (* ::Text:: *)
 (*To convert the first 1110 face into the first 1/5 face, we need to reflect in the "line" pa - pc. Because pa, pb, and pc all lie in a plane parallel to the x, y - plane, this is relatively simple.*)
 
 
-ln[24 l := reflect[{pa_, pc_}, point_] :=
-	Module[{pa2, pc2, point2, projection, perpendicular},
-		pa2 = Drop[pa, -1]; pc2 = Drop[pc, -1];
-		point2 = Drop[point, -1];
-		(* divide in orthogonal and paral l el compo nents *)
-		projection = 1/(pc2 - pa2). (pc2 - pa2)*
-			(pc2 - pa2) . (point2 - pa2) (pc2 - pa2) ;
-		perpendicular = (point2 - pa2) - projection;
-		N[Append[projection - perpendicular, point[[3 lllll
-		
-		
-		
-		
-		(* ::Text:: *)
-		(*  Here is the second part, produced by reflection of firstPar t by applying reflect.*)
-			
-			
-			secondPart = Show [Graphics3D [Polygon /@
-				Map[ref1ect[{p3da, p3db}, #] &, polys3D, {2} 111;
-				
-				
-				
-				
-				(* ::Text:: *)
-				(* We now put first Part and secondPart together to get part [5].*)
-				
-				
-				part [5] \[Bullet] Join [firstPart [ [1]], secondPart [ [1]]];
-				Show[Graphics3D[part[S]]];
-				
-				
-				(* ::Text:: *)
-				(*We now define rotation matrices rnat [ i] to construct the four missing parts of the first face.*)
-				
-				
-				Do [mat [i] = { { Cos [i 2 Pi/5] , Sin [i 2 Pi/5] , 0},
-					{-Sin[i 2 Pi/5], Cos[i 2 Pi/5], 0},
-					{ 0, 0, 1}} // N, {i, 1, 4}]
-				
-				
-				(* ::Text:: *)
-				(*   Next we use mat [i] to rotate part [5] . We call the union of all five parts face [1].*)
-					
-					
-					Do[part[i] = Map[(mat[i].#) & :, part[S], {3}], {i, 4} l
-						face[1] \[Bullet] Flatten[Tab1e[part[i], {i, S} ll;
-						Show[Graphics3D[face[1]]];
-						
-						
-						
-						
-						(* ::Text:: *)
-						(*To implement the rotations of the first face into the positions of the remaining 11 faces, we need to do a little more. Again, we need to find 3 x 3 rotation matrices. We do this by moving three vertices of the first face of our classical (Platonic) dodecahedron to coincide with three vertices of each of the 11 faces. This results in a system of equations in nine variables whose solution gives the desired rotation matrices. *)
-						
-						
-						A = {{all [i] , a12 [i] , a13 [i]}, {a21 [i], a22 (i], a23 [i]},
+reflect[{pa_, pc_}, point_] := Module[
+	{pa2, pc2, point2, projection, perpendicular},
+	pa2 = Drop[pa, -1];
+	pc2 = Drop[pc, -1];
+	point2 = Drop[point, -1];
+	(* divide in orthogonal and paral l el compo nents *)
+	projection = 1/(pc2 - pa2). (pc2 - pa2)*(pc2 - pa2) . (point2 - pa2) (pc2 - pa2) ;
+	perpendicular = (point2 - pa2) - projection;
+	N@Append[projection - perpendicular, point[[3]]]
+]
+
+
+(* ::Text:: *)
+(*  Here is the second part, produced by reflection of firstPar t by applying reflect.*)
+
+
+secondPart =Graphics3D [Polygon /@Map[reflect[{Re@p3da, Re@p3db}, #] &, Re@polys3D, {2}]]
+
+
+(* ::Text:: *)
+(* We now put first Part and secondPart together to get part [5].*)
+
+
+part[5]=Join[firstPart [ [1]], secondPart[[1]]];
+Graphics3D[part[5]]
+
+
+(* ::Text:: *)
+(*We now define rotation matrices mat [i] to construct the four missing parts of the first face.*)
+
+
+Do[mat[i] = N@{
+	{ Cos[i 2 Pi/5] , Sin [i 2 Pi/5] , 0},
+	{-Sin[i 2 Pi/5], Cos[i 2 Pi/5], 0},
+	{ 0, 0, 1}
+} , {i, 1, 4}]
+
+
+(* ::Text:: *)
+(*   Next we use mat [i] to rotate part [5] . We call the union of all five parts face [1].*)
+
+
+Do[part[i] = Map[(mat[i].#) & :, part[S], {3}], {i, 4} l
+	face[1] \[Bullet] Flatten[Tab1e[part[i], {i, S} ll;
+	Show[Graphics3D[face[1]]];
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	(* ::Text:: *)
+	(*To implement the rotations of the first face into the positions of the remaining 11 faces, we need to do a little more. Again, we need to find 3 x 3 rotation matrices. We do this by moving three vertices of the first face of our classical (Platonic) dodecahedron to coincide with three vertices of each of the 11 faces. This results in a system of equations in nine variables whose solution gives the desired rotation matrices. *)
+	
+	
+	A = {{all [i] , a12 [i] , a13 [i]}, {a21 [i], a22 (i], a23 [i]},
 {a31 [i], a32 [i], a33 [i]} };
 Do[~ [i] = (A I.
 	Solve[ (* solve the equat ions *)
