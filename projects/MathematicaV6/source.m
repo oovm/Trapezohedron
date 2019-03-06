@@ -60,8 +60,8 @@ dodecahedronTriangles = Block[
 	{faces, f, v},
 	faces = Polygon /@ PolyhedronData["Dodecahedron", "FaceIndices"];
 	f[l_] := Module[
-		{mp = 1 / 5 Plus @@ l[[1]]},
-		(Polygon[Append[#, mp]]&) /@ Partition[Append[l[[1]], l[[1, 1]]], 2, 1]
+		{mp = 1 / 5 Plus @@ First[l]},
+		Polygon[Append[#, mp]]& /@ Partition[Append[l[[1]], l[[1, 1]]], 2, 1]
 	];
 	v = PolyhedronData["Dodecahedron", "VertexCoordinates"][[#]]&;
 	N[Flatten[f /@ N[Map[v, faces, {-1}], 100]]]
@@ -186,7 +186,8 @@ baseColor[ξ_] := Hue[0.1 - 0.11ξ, 0.5 + 0.5ξ, 1];
 baseOpacity[ξ_] := Opacity[0.35 + 0.65(1 - (1 - ξ^2)^(1 / 2))];
 extensionColor[ξ_] := Hue[
 	0.05 - 0.2 If[
-		(1 - (1 - ξ^2)^(1 / 2)) > 0.3, 0.3,
+		(1 - (1 - ξ^2)^(1 / 2)) > 0.3,
+		0.3,
 		(1 - (1 - ξ^2)^(1 / 2))
 	],
 	0.5 + 0.8ξ,
