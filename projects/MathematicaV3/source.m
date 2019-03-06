@@ -64,26 +64,23 @@
 
 
 (* ::Text:: *)
-(*We first read in the package.*)
-
-
-Needs["Graphics`Polyhedra`"]
+(*We first read the data.*)
 
 
 (* ::Text:: *)
 (*We have seen this dodecahedron earlier. Here is the explicit list of its faces.*)
 
 
-Short[dode = PolyhedronData["Dodecahedron"][[1]], 6]
+dode = First@PolyhedronData["Dodecahedron","Faces","Polygon"];
 
 
 (* ::Text:: *)
 (*We denote the center of the dodecahedron by pa, a vertex by pc, and the midpoint of an edge of the first polygon of dode by pb.*)
 
 
-pa = Plus @@ dode[[1, 1]] / 5
-pc = dode[[1, 1, 1]]
-pb = (dode[[1, 1, 2]] + dode[[1, 1, 1]]) / 2
+pa = Plus @@ dode[[1, 1]] / 5;
+pc = dode[[1, 1, 1]];
+pb = (dode[[1, 1, 2]] + dode[[1, 1, 1]]) / 2;
 
 
 (* ::Text:: *)
@@ -98,11 +95,11 @@ pb = (dode[[1, 1, 2]] + dode[[1, 1, 1]]) / 2
 (*Here are the other points in the triangle pa-pb-pc.*)
 
 
-ab = pb - pa; ac=pc - pa; bc=pc - pb;
+ab = pb - pa; ac = pc - pa; bc = pc - pb;
 p1 = pa + ab / 4; p2 = pa + ab / 2; p3 = pa + 3 ab / 4;
-p4 = pa + ac / 4; p5 = pa + ac / 2; p6=pb + bc / 2;
-p7 = pb + 3 bc / 4; p8 :=p8= p9 + (pc - p9) / 2;p9 = pa + 3 ac / 4;
-p10 := p10=p9 + (p11 - p9) / 2;p11 = p9 + (pb - p9) / 2;
+p4 = pa + ac / 4; p5 = pa + ac / 2; p6 = pb + bc / 2;
+p7 = pb + 3 bc / 4; p8 := p8 = p9 + (pc - p9) / 2;p9 = pa + 3 ac / 4;
+p10 := p10 = p9 + (p11 - p9) / 2;p11 = p9 + (pb - p9) / 2;
 p12 = p11 + (p6 - p11) / 2; p13 = p11 + (pc - p11) / 2;
 p14 = p5 + (pb - p5) / 2;
 
@@ -125,10 +122,10 @@ polys = {
 (*To better view this, we define a function shrink that shrinks the individual subtriangles.*)
 
 
-shrink[poly_List, factor_] :=Module[
-	{mp = (Plus @@ poly)/Length[poly]},
+shrink[poly_List, factor_] := Module[
+	{mp = (Plus @@ poly) / Length[poly]},
 	mp + factor (# - mp) & /@ poly
-]
+];
 
 
 (* ::Text:: *)
@@ -137,7 +134,8 @@ shrink[poly_List, factor_] :=Module[
 
 Graphics3D[
 	Polygon /@ (shrink[#, 0.7] & /@ polys),
-	ViewPoint -> {0, 0, 3}, Axes -> {True, True, False}
+	ViewPoint -> {0, 0, 3}, Boxed->False,
+	ImageSize->Small
 ]
 
 
@@ -145,43 +143,48 @@ Graphics3D[
 (*Now, we must use these planar triangles, consisting of small subtriangles, to construct the inward - curved surface of the hyperbolic dodecahedron. We do this by pulling the vertices of the subtriangles toward the center. The boundary vertex pc (a vertex of the initial dodecahedron) remains in its original position. To ensure that the resulting curved edges can later be joined without problems, we move the points along the lines connecting them to the center (0, 0, 0} of the dodecahedron. We determine the size of the contraction factors using a sphere that indents the face.*)
 
 
-intersectionPoint[point_, rad_] :=Module[
-	{zk},
-(* sphere midpoint distance *)
+intersectionPoint[point_, rad_] := Module[
+	{zk},(* sphere midpoint distance *)
 	zk = Sqrt[rad^2 + (pc - pa).(pc - pa)] + pa[[3]];
-	point*((-Sqrt[rad^2 - point[[1]]^2 -point [ [2]]^2] + zk) /pc [[3]])
-]
+	point * ((-Sqrt[rad^2 - point[[1]]^2 - point[[2]]^2] + zk) / pc[[3]])
+];
 
 
 (* ::Text:: *)
 (*Here, rad denotes the radius of this sphere. It must be greater than the following number. 2.3 Some More Complicated Three - Dimensional Graphics*)
 
 
-Sqrt[(pc - pa).(pc - pa)]
+N@Sqrt[(pc - pa).(pc - pa)]
 
 
 (* ::Text:: *)
-(* Here are the vertices on the concave surface formed from the vertices of the subtriangles. In order to avoid writing 14 equations in the following input, we use the construction Evaluate [ToExpression [ 11 \[Bullet] \[Bullet] \[Bullet] 11 <>*)
-(*                         ToString [i]]].*)
+(*Here are the vertices on the concave surface formed from the vertices of the subtriangles. In order to avoid writing 14 equations in the following input.*)
 
 
-p3da intersectionPoint[pa, 0.65];
-p3db \[Bullet] intersectionPoint[pb, 0.65];
-p3dc = intersectionPoint[pc, 0.65];
-Do[Evaluate[ToExpression["p3d" <> ToString[i]]] \[Bullet]
-	intersectionPoint[ToExpression[\[Bullet]p\[Bullet] <> ToString[i]], 0.65],
-	{i, 14} 1
+p3da=intersectionPoint[pa, 0.65]
+p3db=intersectionPoint[pb, 0.65]
+p3dc=intersectionPoint[pc, 0.65]
+
+
+Do[
+	Evaluate[ToExpression["p3d" <> ToString[i]]]=
+		intersectionPoint[ToExpression["p" <> ToString[i]], 0.65],
+	{i, 14}
+]
 
 
 (* ::Text:: *)
 (*Here are the triangles that are analogous to poly, and that approximate the curved surface.*)
-	
-	
-	polys 3 D = (* just analogous to 2 D *)
-		Map[Hold, (* r euse input from above *)
-			Cases[DownValues[In], HoldPattern[ :> (polys = ;)]],
-{-1} 1 [[1, 2, 1, 2]] /. Hold[p_] :> Blockl {p},
-ToExpression[Stringinsert[ToString[p], "3d", 2]]];
+
+
+(* just analogous to 2 D *)
+polys3D =  Map[
+	Hold, (* r euse input from above *)
+	Cases[DownValues[In], HoldPattern[_:> (polys =_;)]],
+	{-1}][[1, 2, 1, 2]] /. Hold[p_] :> Block[
+	{p},
+	ToExpression[StringInsert[ToString[p], "3d", 2]]
+]
 
 
 (* ::Text:: *)
