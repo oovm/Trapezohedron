@@ -86,10 +86,9 @@ dode = First@PolyhedronData["Dodecahedron", "Faces", "Polygon"] // N;
 (*We denote the center of the dodecahedron by pa, a vertex by pc, and the midpoint of an edge of the first polygon of dode by pb.*)
 
 
-pa = Plus @@ dode[[1, 1]] / 5
-pc = dode[[1, 1, 1]]
-pb = (dode[[1, 1, 2]] + dode[[1, 1, 1]]) / 2
-
+pa = Plus @@ dode[[1, 1]] / 5;
+pb = (dode[[1, 1, 2]] + dode[[1, 1, 1]]) / 2;
+pc = dode[[1, 1, 1]];
 
 (* ::Text:: *)
 (*We begin with the triangulation of a face. *)
@@ -103,12 +102,24 @@ pb = (dode[[1, 1, 2]] + dode[[1, 1, 1]]) / 2
 (*Here are the other points in the triangle pa-pb-pc.*)
 
 
-ab = pb - pa; ac = pc - pa; bc = pc - pb;
-p1 = pa + ab / 4; p2 = pa + ab / 2; p3 = pa + 3 ab / 4;
-p4 = pa + ac / 4; p5 = pa + ac / 2; p6 = pb + bc / 2;
-p7 = pb + 3 bc / 4; p8 := p8 = p9 + (pc - p9) / 2;p9 = pa + 3 ac / 4;
-p10 := p10 = p9 + (p11 - p9) / 2;p11 = p9 + (pb - p9) / 2;
-p12 = p11 + (p6 - p11) / 2; p13 = p11 + (pc - p11) / 2;
+ab = pb - pa;
+ac = pc - pa;
+bc = pc - pb;
+
+
+p1 = pa + ab / 4;
+p2 = pa + ab / 2;
+p3 = pa + 3 ab / 4;
+p4 = pa + ac / 4;
+p5 = pa + ac / 2;
+p6 = pb + bc / 2;
+p7 = pb + 3 bc / 4;
+p8 := p8 = p9 + (pc - p9) / 2;
+p9 = pa + 3 ac / 4;
+p10 := p10 = p9 + (p11 - p9) / 2;
+p11 = p9 + (pb - p9) / 2;
+p12 = p11 + (p6 - p11) / 2;
+p13 = p11 + (pc - p11) / 2;
 p14 = p5 + (pb - p5) / 2;
 
 
@@ -171,9 +182,9 @@ N@Sqrt[(pc - pa).(pc - pa)]
 
 
 Clear@"p3d*";
-p3da = intersectionPoint[pa, 0.65]
-p3db = intersectionPoint[pb, 0.65]
-p3dc = intersectionPoint[pc, 0.65]
+p3da = intersectionPoint[pa, 0.65];
+p3db = intersectionPoint[pb, 0.65];
+p3dc = intersectionPoint[pc, 0.65];
 
 
 Do[Set[
@@ -215,11 +226,11 @@ reflect[{pa_, pc_}, point_] := Module[
 	pa2 = Drop[pa, -1];
 	pc2 = Drop[pc, -1];
 	point2 = Drop[point, -1];
-	(* divide in orthogonal and paral l el compo nents *)
+	(* divide in orthogonal and parallel components *)
 	projection = 1 / (pc2 - pa2). (pc2 - pa2) * (pc2 - pa2) . (point2 - pa2) (pc2 - pa2) ;
 	perpendicular = (point2 - pa2) - projection;
 	N@Append[projection - perpendicular, point[[3]]]
-]
+];
 
 
 (* ::Text:: *)
@@ -236,8 +247,7 @@ secondPart = Graphics3D[
 (* We now put first Part and secondPart together to get part[5].*)
 
 
-part[5] = Join[firstPart[[1]], secondPart[[1]]];
-Graphics3D[part[5]]
+Graphics3D[part[5] = Join[firstPart[[1]], secondPart[[1]]]]
 
 
 (* ::Text:: *)
@@ -245,17 +255,17 @@ Graphics3D[part[5]]
 
 
 Do[mat[i] = N@{
-	{ Cos[i 2 Pi / 5] , Sin[i 2 Pi / 5] , 0},
-	{-Sin[i 2 Pi / 5], Cos[i 2 Pi / 5], 0},
+	{ Cos[i * 2 Pi / 5], Sin[i * 2 Pi / 5], 0},
+	{-Sin[i * 2 Pi / 5], Cos[i * 2 Pi / 5], 0},
 	{ 0, 0, 1}
-} , {i, 1, 4}]
+} , {i, 1, 4}];
 
 
 (* ::Text:: *)
 (*   Next we use mat [i] to rotate part [5] . We call the union of all five parts face [1].*)
 
 
-Do[part[i] = Map[(mat[i].#) &, part[5], {3}], {i, 4} ]
+Do[part[i] = Map[(mat[i].#) &, part[5], {3}], {i, 4}];
 Graphics3D[face[1] = Flatten[Table[part[i], {i, 5}]]]
 
 
@@ -268,22 +278,24 @@ A = {
 	{a21[i], a22[i], a23[i]},
 	{a31[i], a32[i], a33[i]}
 };
-Do[\[ScriptCapitalR][i] = (A /. Solve[ (* solve the equat ions *)
-	Flatten[Table[(* make e q uati o ns by rotating points *)
-		Thread[A.dode[[1, 1, j]] == dode[[i, 1, j]]], (* the rotation matrix to be determined *)
-		{j, 3}]], Flatten[A]])[[1]], {i, 12}
-]
+Do[\[ScriptCapitalR][i] = First@(A /. Solve[(* solve the equations *)
+	Flatten@Table[(* make equations by rotating points *)
+		Thread[A.dode[[1, 1, j]] == dode[[i, 1, j]]], (*the rotation matrix to be determined *)
+		{j, 3}
+	],
+	Flatten[A]]), {i, 12}
+];
 
 
 (* ::Text:: *)
-(*' R [ 7] is one of these rotation matrices.*)
+(* R[7] is one of these rotation matrices.*)
 
 
 (* ::Text:: *)
 (* We now rotate face[1] into the other positions.*)
 
 
-Do[face[i] = Map[ (\[ScriptCapitalR][i].#)&, face[1], {3}], {i, 2, 12}]
+Do[face[i] = Map[\[ScriptCapitalR][i].#&, face[1], {3}], {i, 2, 12}];
 
 
 (* ::Text:: *)
@@ -297,11 +309,19 @@ Graphics3D[Table[face[i], {i, 12}], Boxed -> False]
 (*Using the default viewpoint, we cannot see all surfaces, so we modify the display by showing the visible surfaces of the dodecahedron in color; the invisible ones are not displayed at all.*)
 
 
-Graphics 3D[ (* only the visible faces *)
-	{EdgeForm[Thickness[0.0001]],
-		{OrangeRed, face[l]}, {LightBlue, face[2]}, {Yellow, face[6]},
-		{Green, face[S]}, {Violet, face[10]}, {Orange, face[l1l}}l,
-Boxed -> False, Lighting -> False
+(* only the visible faces *)
+Graphics3D[
+	{
+		EdgeForm[Thickness@0.0001],
+		{ColorData["Legacy", "OrangeRed"], face[1]},
+		{LightBlue, face[2]},
+		{Yellow, face[6]},
+		{Green, face[5]},
+		{ColorData["Legacy", "Violet"], face[10]},
+		{Orange, face[11]}
+		
+	},
+	Boxed -> False, Lighting -> False
 ]
 
 
@@ -314,45 +334,59 @@ Boxed -> False, Lighting -> False
 (*  (By increasing the number of iteration steps of Nest, which is currently three, we can get an arbitrarily fine subdivision of the faces of the dodecahedron.)*)
 
 
-Graphics3D[{EdgeForm[{GrayLevel[0.25], Thickness[0.001]}],
-	SurfaceColor[GrayLevel[0.8], RGBColor[1, 0.4, 1],
-		3], {Polygon /@ #1, Polygon /@ #2,
+Block[
+	{faces, f, g, h, ploys},
+	faces = First /@ First[N@PolyhedronData["Dodecahedron", "Faces", "Polygon"]];
+	f = Function[{$}, {{First[#], Plus @@ # / 2, Last[$]}, {Last[#], Plus @@ # / 2, Last[$]}} & /@ First[$]];
+	g = Function[{$1, $2, $3}, {{$1, #, $2}, {$3, #, $2}}&[$1 + (($2 - $1).#) # &[# / Sqrt[#.#] &[($3 - $1)]]]];
+	h = {
+		Polygon /@ #1, Polygon /@ #2,
 		MapThread[
-			Polygon[Join[#1, #2]] &, {Reverse /@
-			Flatten[Partition[#, 2,
-				1] & /@ (Append[#, First[#]] & /@ #2), 1],
-			Flatten[Partition[#, 2, 1] & /@ (Append[#, First[#]] & /@ #1),
-				1]} 1]} & @@ ({Map[0.92 # &, #, {-1}], #} &[(Function[$,
-		Function[$, # + 0.8 ($ - #)] /@ $ &[Plus @@ $ / 3]] /@
-		Map[# ((1.07 - Sqrt[1.07 - (# - 0.850651)^2]) &[Sqrt[#.#]]) &,
-			Nest[Flatten[
-				Apply[Function[{$1, $2, $3}, {{$1, #, $2}, {$3, #, $2}}
-					&[$1 + (($2 - $1).#) # &[# / Sqrt[#.#] &[($3 - $1)]]]], #, {1}], 1] &,
-				Flatten[Function[{$}, {{First[#], Plus @@ # / 2,
-					Last[$]}, {Last[#], Plus @@ # / 2, Last[$]}} & /@
-					First[$]] /@ ({Partition[Append[#, First[#]], 2, 1],
-					Plus @@ # / 5} & /@ (First /@
-					First[N@
-						PolyhedronData["Dodecahedron", "Faces",
-							"Polygon"]])), 2], 3], {-2}])])}, Boxed -> False]
+			Polygon[Join[#1, #2]] &,
+			{
+				Reverse /@ Flatten[Partition[#, 2, 1] & /@ (Append[#, First[#]] & /@ #2), 1],
+				Flatten[Partition[#, 2, 1] & /@ (Append[#, First[#]] & /@ #1), 1]
+			}
+		]
+	} &;
+	ploys = {
+		EdgeForm[{GrayLevel[0.25], Thickness[0.001]}],
+		SurfaceColor[GrayLevel[0.8], RGBColor[1, 0.4, 1], 3],
+		h @@ ({Map[0.92 # &, #, {-1}], #} &[(
+			Function[$, Function[$, # + 0.8 ($ - #)] /@ $ &[Plus @@ $ / 3]] /@
+				Map[
+					# ((1.07 - Sqrt[1.07 - (# - 0.850651)^2]) &[Sqrt[#.#]]) &,
+					Nest[
+						Flatten[Apply[g, #, {1}], 1] &,
+						Flatten[f /@ ({Partition[Append[#, First[#]], 2, 1],
+							Plus @@ # / 5} & /@ faces), 2],
+						3
+					],
+					{-2}
+				]
+		)])
+	};
+	Graphics3D[ploys, Boxed -> False]
+]
+
 
 (* ::Text:: *)
-(*The last Matherrultica input showed how Matherrultica code should not be formatted; it is rather unreadable in this form. The way this codes works can be understood better by looking at it in Full Form and arranging the brackets carefully. *)
+(*The last Mathematica input showed how Mathematica code should not be formatted; it is rather unreadable in this form. The way this codes works can be understood better by looking at it in Full Form and arranging the brackets carefully. *)
 
 
 (* ::Text:: *)
 (*In the last function, the main work was the recursive subdivision of the right - angled triangles in two right - angled triangles. We extract this part and call it orthogonalSubdi vision.*)
 
 
-orthogonalSubdivision [1 _, n_] : =
+orthogonalSubdivision[1 _, n_] : =
 Nest[Flatten[Apply[Function[{pl, p2, p3},
-< {{pl, #, p2}, {p3, #, p2}} &) [
-(* project *) (pl + (p2 - pl) .# # &) [ (* new point on edge *)
-	(#/Sqrt[#.#] &)[p3 - pl]]]], #1, {1} 1, 1] &,
-Flatten[(Function[{p}, < {{First[#], Plus\[RegisteredTrademark]\[RegisteredTrademark] #/2, Last[pl},
-	{Last[#], Plus @@ #/2, Last[pl}} &) /\[RegisteredTrademark]
-First[p]]) /\[RegisteredTrademark] ({(*cyclic*) Partition[Append[#, First[#]], 2, 1],
-(*center *)Plus @@ #/3} &) /\[RegisteredTrademark] 1, 2], n]
+< {{pl, #, p2}, {p3, #, p2}} &)[
+(* project *) (pl + (p2 - pl) .# # &)[ (* new point on edge *)
+	(# / Sqrt[#.#] &)[p3 - pl]]]], #1, {1} 1, 1]&,
+Flatten[(Function[{p}, < {{First[#], Plus\[RegisteredTrademark]\[RegisteredTrademark] # / 2, Last[pl},
+	{Last[#], Plus @@ # / 2, Last[pl}} &) / \[RegisteredTrademark]
+First[p]]) / \[RegisteredTrademark] ({(*cyclic*) Partition[Append[#, First[#]], 2, 1],
+(*center *)Plus @@ # / 3} &) / \[RegisteredTrademark] 1, 2], n]
 
 
 (* ::Text:: *)
@@ -361,11 +395,11 @@ First[p]]) /\[RegisteredTrademark] ({(*cyclic*) Partition[Append[#, First[#]], 2
 
 (* split triangle into four triangles *)
 triangleTo4Triangles[Polygon[{pl_, p2_, p3_} ll :=
-	With[{pl2 = (pl + p2)/2, p23 = (p2 + p3)/2, p31 = (p3 + pl)/2},
+	With[{pl2 = (pl + p2) / 2, p23 = (p2 + p3) / 2, p31 = (p3 + pl) / 2},
 		{Polygon[{pl, pl2, p31}], Polygon[{pl2, p2, p23} l,
 			Polygon[{p23, p3, p3l} l, Polygon[{pl2, p23, p3l} l} l
-ln[431 := triangleList = Polygon /\[RegisteredTrademark] orthogonalSubdivision [
-	First /\[RegisteredTrademark] Nest[Flatten[triangleTo4Triangles /\[RegisteredTrademark] #] &,
+ln[431 := triangleList = Polygon / \[RegisteredTrademark] orthogonalSubdivision[
+	First / \[RegisteredTrademark] Nest[Flatten[triangleTo4Triangles / \[RegisteredTrademark] #] &,
 		First[Polyhedron[Icosahedron]], 2], 4];
 
 
@@ -376,22 +410,22 @@ ln[431 := triangleList = Polygon /\[RegisteredTrademark] orthogonalSubdivision [
 (* length of the longest edge of a triangle *)
 maxEdgeLength[Polygon[{pl_, p2_, p3_} ll :=
 	
-	Sqrt[Max[#.# & /\[RegisteredTrademark] {pl - p2, p2 - p3, p3 - pl} ll
+	Sqrt[Max[#.# & / \[RegisteredTrademark] {pl - p2, p2 - p3, p3 - pl} ll
 	(* contract a polygon *)
 		contract[Polygon[{pl_, p2_, p3_} 1, f_l :=
-			Module[{mp = (pl + p2 + p3)/3}, mp + f (# - mp) & /\[RegisteredTrademark] {pl, p2, p3} l;
+			Module[{mp = (pl + p2 + p3) / 3}, mp + f (# - mp) & / \[RegisteredTrademark] {pl, p2, p3} l;
 			ln[48] := addColor[p : Polygon[{pl_, p2_, p3_} ll :=
 				With[{A = (*large number*) 10 A6 maxEdgeLength[p]},
 					{SurfaceColor[Hue[A], Hue[A], 3],
-						Polygon[#/Sqrt[#.#] & /\[RegisteredTrademark] (contract[p, 0.7]) 1} 1
-ln[49] := Show[Graphics3D[{EdgeForm[], addColor /\[RegisteredTrademark] triangleList} l, Boxed -> False];
+						Polygon[# / Sqrt[#.#] & / \[RegisteredTrademark] (contract[p, 0.7]) 1} 1
+ln[49] := Show[Graphics3D[{EdgeForm[], addColor / \[RegisteredTrademark] triangleList} l, Boxed -> False];
 
 
 (* ::Text:: *)
 (*We could now refine the last cover picture by adding curvature to the individual pieces of the last picture. Here, this is implemented.*)
 
 
-HyperbolicDodecahedron [
+HyperbolicDodecahedron[
 	n : (faceSubdivision_Integer?Positive),
 	m : (invisibleSubdivisionOfTriangles_Integer?Positive),
 	d : (radialContractionFactor_?(0 < # < 1 &)),
@@ -399,25 +433,25 @@ HyperbolicDodecahedron [
 	opts ___ ?OptionQ] : \[Bullet]
 	Show[Graphics3D[{BdgeForm[], SurfaceColor[RGBColor[0.7, 0.5, 0.2],
 		RGBColor[O . S , 0.4, 0 . 7], 2] , Thickness[0 . 0001], Function[{t, f}, Function[{l, o},
-		{Polygon/80, Polygon /@ Map[d # &, o, {-2}], Polygon /@ (Join[#[[1]],
+		{Polygon / 80, Polygon /@ Map[d # &, o, {-2}], Polygon /@ (Join[#[[1]],
 			Reverse[#[[2]]]] & /@ Transpose[{Flatten[Partition[#, 2, 1] & /@ 1, 1],
-			Flatten[Partition[#, 2, 1] &/0 Map[d # &, l, {-2} l, 1 l} Jl,
+			Flatten[Partition[#, 2, 1] & / 0 Map[d # &, l, {-2} l, 1 l} Jl,
 Line /@ l, Line /@ Map[d # &, l , {-2} J, Line /@ Transpose[{#, Map[d # &, #, {-2} 1} & 1
-Map [f, Flatten [t, 11, { -2} 1 11 } 1 [Map [f , Apply [Function l {p, q, r} ,
-	Function ({a, b, c}, Join[##, {p} 1 & 00 (Apply[(Function ($1, #1 + $1 #21/0
-		Range[O, m - 11) &, {{p, a}, {q, b} , {r, c}}, {1} 1 ) 1 [(q - p)/m, (r - q)/m, (p - r)/m1],
+Map[f, Flatten[t, 11, { -2} 1 11 } 1[Map[f , Apply[Function l {p, q, r} ,
+	Function ({a, b, c}, Join[##, {p} 1 & 00 (Apply[(Function ($1, #1 + $1 #21 / 0
+		Range[O, m - 11) &, {{p, a}, {q, b} , {r, c}}, {1} 1 ) 1[(q - p) / m, (r - q) / m, (p - r) / m1],
 t, {1} l, {-2} l , Map[f, Flatten[Apply[Function[{p, q, r}, Function[s,
 	Join[Flattan[Apply[s[[##11 &, Mapindexed[{# , # + {1, 0}, # + {0, 1}} & 1
 		Reverse[#2]] &, Range[m - # + 11 & /@ Range[ml, {2} l, {3} l, 1], F1atten[Apply[
 		s[[##]] &, Mapindexed[{# + {0, 1}, # + {1, 1}, # + {l, O}} &[Reverse[#2]] &,
-			Range [m - #] &/IIRange [m1, {2} 1, {3} 1, 1]] 1 [Function l {a, b},
-			Mapindexed[p + (l2 - {1, 1} l . {a, b} &, Thread/II ({#, Range[O, m - 11} & /@
-Range [0 , m]) , {2} ]] [ (q - p) /m, (r - p) /mlll , t , {1} 1 , 11 , { -2} l]] [Function[$,
-	Function[$, # + e ($ - #)] /@ $ &[Plus @@ $/3]] /@ Nest[Flatten[Apply[
+			Range[m - #] & / IIRange[m1, {2} 1, {3} 1, 1]] 1[Function l {a, b},
+			Mapindexed[p + (l2 - {1, 1} l . {a, b} &, Thread / II ({#, Range[O, m - 11} & /@
+Range[0 , m]) , {2} ]][ (q - p) / m, (r - p) / mlll , t , {1} 1 , 11 , { -2} l]][Function[$,
+	Function[$, # + e ($ - #)] /@ $ &[Plus @@ $ / 3]] /@ Nest[Flatten[Apply[
 	Function[{$1, $2, $3}, {{$1, #, $2}, {$3, #, $2}} &[$1 + (($2 - $1) . #) # &[
-		#/Sqrt[# . #1 &[($3 - $1lll11 , #, {1} 1, 11 &, Flatten[Function[{$},
-			{{First[11 , Plus00 #/2, Last[$1}, {Last[#1, Plus00 #/2, Last[$1}} &/0
-First[$11 /@ ({Partition[Append[#, First[#J1, 2, 1], Plus00 #/5} & /@ (First /@
+		# / Sqrt[# . #1 &[($3 - $1lll11 , #, {1} 1, 11 &, Flatten[Function[{$},
+			{{First[11 , Plus00 # / 2, Last[$1}, {Last[#1, Plus00 # / 2, Last[$1}} & / 0
+First[$11 /@ ({Partition[Append[#, First[#J1, 2, 1], Plus00 # / 5} & /@ (First /@
 	First[Polyhedron[Dodecahedron] 1)), 2], n1, # ((1.07 - Sqrt[
 	1 . 07 - (I - 0 . 850651) A2]) &[Sqrt[#.I]]) & J} 1 , opts,
 Boxed -> Falsa, PlotRange -> All, ViewPoint - > {2 , 2, 2} 1;
