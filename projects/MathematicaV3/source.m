@@ -79,7 +79,7 @@
 (*We have seen this dodecahedron earlier. Here is the explicit list of its faces.*)
 
 
-dode = First@PolyhedronData["Dodecahedron", "Faces", "Polygon"]//N;
+dode = First@PolyhedronData["Dodecahedron", "Faces", "Polygon"] // N;
 
 
 (* ::Text:: *)
@@ -189,9 +189,9 @@ Do[Set[
 (* just analogous to 2D *)
 polys3D = Block[
 	{inputs},
-	inputs=Map[Hold, Cases[DownValues[In], HoldPattern[_ :> (polys = _;)]], {-1}];
+	inputs = Map[Hold, Cases[DownValues[In], HoldPattern[_ :> (polys = _;)]], {-1}];
 	(* reuse input from above *)
-	inputs[[1, 2, 1, 2]] /. Hold[p_] :> Block[{p},ToExpression[StringInsert[ToString@p, "3d", 2]]]
+	inputs[[1, 2, 1, 2]] /. Hold[p_] :> Block[{p}, ToExpression[StringInsert[ToString@p, "3d", 2]]]
 ];
 
 
@@ -201,8 +201,8 @@ polys3D = Block[
 
 firstPart = Graphics3D[
 	Polygon /@ polys3D,
-	ViewPoint->{0,0,3},
-	PlotRange -> All,Boxed->False
+	ViewPoint -> {0, 0, 3},
+	PlotRange -> All, Boxed -> False
 ]
 
 
@@ -228,7 +228,7 @@ reflect[{pa_, pc_}, point_] := Module[
 
 secondPart = Graphics3D[
 	Polygon /@ Map[reflect[{p3da, p3db}, #] &, polys3D, {2}],
-	Boxed->False
+	Boxed -> False
 ]
 
 
@@ -256,7 +256,7 @@ Do[mat[i] = N@{
 
 
 Do[part[i] = Map[(mat[i].#) &, part[5], {3}], {i, 4} ]
-Graphics3D[face[1] =Flatten[Table[part[i], {i, 5}]]]
+Graphics3D[face[1] = Flatten[Table[part[i], {i, 5}]]]
 
 
 (* ::Text:: *)
@@ -268,10 +268,10 @@ A = {
 	{a21[i], a22[i], a23[i]},
 	{a31[i], a32[i], a33[i]}
 };
-Do[\[ScriptCapitalR][i] = (A/.     Solve[ (* solve the equat ions *)
+Do[\[ScriptCapitalR][i] = (A /. Solve[ (* solve the equat ions *)
 	Flatten[Table[(* make e q uati o ns by rotating points *)
-		Thread[A.dode[[1, 1, j]] == dode[[i, 1, j]]],(* the rotation matrix to be determined *)
-		{j, 3}]],Flatten[A]]) [ [1]], {i, 12}
+		Thread[A.dode[[1, 1, j]] == dode[[i, 1, j]]], (* the rotation matrix to be determined *)
+		{j, 3}]], Flatten[A]])[[1]], {i, 12}
 ]
 
 
@@ -283,25 +283,25 @@ Do[\[ScriptCapitalR][i] = (A/.     Solve[ (* solve the equat ions *)
 (* We now rotate face[1] into the other positions.*)
 
 
-Do[face[i] = Map [ (\[ScriptCapitalR][i].#)&, face[1], {3}], {i, 2, 12}]
+Do[face[i] = Map[ (\[ScriptCapitalR][i].#)&, face[1], {3}], {i, 2, 12}]
 
 
 (* ::Text:: *)
 (* We look at the resulting object.*)
 
 
-Graphics3D[Table[face[i], {i, 12}], Boxed-> False]
+Graphics3D[Table[face[i], {i, 12}], Boxed -> False]
 
 
 (* ::Text:: *)
 (*Using the default viewpoint, we cannot see all surfaces, so we modify the display by showing the visible surfaces of the dodecahedron in color; the invisible ones are not displayed at all.*)
 
 
-Graphics 3D [ (* only the visible faces *)
+Graphics 3D[ (* only the visible faces *)
 	{EdgeForm[Thickness[0.0001]],
 		{OrangeRed, face[l]}, {LightBlue, face[2]}, {Yellow, face[6]},
 		{Green, face[S]}, {Violet, face[10]}, {Orange, face[l1l}}l,
-Boxed-> False, Lighting-> False
+Boxed -> False, Lighting -> False
 ]
 
 
@@ -314,24 +314,27 @@ Boxed-> False, Lighting-> False
 (*  (By increasing the number of iteration steps of Nest, which is currently three, we can get an arbitrarily fine subdivision of the faces of the dodecahedron.)*)
 
 
-Show[Graphics3D [{EdgeForm[{GrayLevel [0 .25],
-	Thickness[0.001l}l,SurfaceColor[GrayLevel[0.8],
-	RGBColor[1,0.4,1],3l,{Polygon/@#l,Polygon/@#2,
-		MapThread[Polygon[Join[#1,#2]]&,{Reverse/@Flatten[
-			Partition[#,2,1]&/@(Append[#,First[#]]&/@#2),
-			1],Flatten[Partition[#,2,1]&/@(Append[#,First[#]]&/@
-			#1),11}1}& @@({Map[0.92#&,#,{-l}l,#}&[
-(Function[$,Function[$,#+0.8($-#)]/@$&[Plus@@ $/3]
-]/@Map[#((1.07-Sqrt[1.07-(#-0.85065l)A2])&[Sqrt[
-	#.#]])&,Nest[Flatten[Apply[Function[{$1,$2,$3},
-	{{$1,#,$2},{$3,#,$2}}&[$1+(($2-$1).#)#&[#/Sqrt[#.#
-	]&[($3-$1)]]]],#,{1}l,l]&,Flatten[
-	Function[{$},{{First[#],Plus@@ #/2,Last[$]},
-		{Last[#],Plus@@#/2,Last[$l}}&/@First[$]]/@
-({Partition[Append[#,First[#]],2,1],Plus@@
-	#/5}&/@(First/@First[Polyhedron[Dodecahedron]
-] ) ) , 2], 3] , { -2}] ) ] ) } ] , Boxed->False] ;
-
+Graphics3D[{EdgeForm[{GrayLevel[0.25], Thickness[0.001]}],
+	SurfaceColor[GrayLevel[0.8], RGBColor[1, 0.4, 1],
+		3], {Polygon /@ #1, Polygon /@ #2,
+		MapThread[
+			Polygon[Join[#1, #2]] &, {Reverse /@
+			Flatten[Partition[#, 2,
+				1] & /@ (Append[#, First[#]] & /@ #2), 1],
+			Flatten[Partition[#, 2, 1] & /@ (Append[#, First[#]] & /@ #1),
+				1]} 1]} & @@ ({Map[0.92 # &, #, {-1}], #} &[(Function[$,
+		Function[$, # + 0.8 ($ - #)] /@ $ &[Plus @@ $ / 3]] /@
+		Map[# ((1.07 - Sqrt[1.07 - (# - 0.850651)^2]) &[Sqrt[#.#]]) &,
+			Nest[Flatten[
+				Apply[Function[{$1, $2, $3}, {{$1, #, $2}, {$3, #, $2}}
+					&[$1 + (($2 - $1).#) # &[# / Sqrt[#.#] &[($3 - $1)]]]], #, {1}], 1] &,
+				Flatten[Function[{$}, {{First[#], Plus @@ # / 2,
+					Last[$]}, {Last[#], Plus @@ # / 2, Last[$]}} & /@
+					First[$]] /@ ({Partition[Append[#, First[#]], 2, 1],
+					Plus @@ # / 5} & /@ (First /@
+					First[N@
+						PolyhedronData["Dodecahedron", "Faces",
+							"Polygon"]])), 2], 3], {-2}])])}, Boxed -> False]
 
 (* ::Text:: *)
 (*The last Matherrultica input showed how Matherrultica code should not be formatted; it is rather unreadable in this form. The way this codes works can be understood better by looking at it in Full Form and arranging the brackets carefully. *)
