@@ -90,6 +90,7 @@ pa = Plus @@ dode[[1, 1]] / 5;
 pb = (dode[[1, 1, 2]] + dode[[1, 1, 1]]) / 2;
 pc = dode[[1, 1, 1]];
 
+
 (* ::Text:: *)
 (*We begin with the triangulation of a face. *)
 
@@ -314,11 +315,11 @@ Graphics3D[
 	{
 		EdgeForm[Thickness@0.0001],
 		{ColorData["Legacy", "OrangeRed"], face[1]},
-		{LightBlue, face[2]},
-		{Yellow, face[6]},
-		{Green, face[5]},
+		{ColorData["Legacy", "LightBlue"], face[2]},
+		{ColorData["Legacy", "Yellow"], face[6]},
+		{ColorData["Legacy", "Green"], face[5]},
 		{ColorData["Legacy", "Violet"], face[10]},
-		{Orange, face[11]}
+		{ColorData["Legacy", "Orange"], face[11]}
 		
 	},
 	Boxed -> False, Lighting -> False
@@ -335,36 +336,33 @@ Graphics3D[
 
 
 Block[
-	{faces, f, g, h, ploys},
-	faces = First /@ First[N@PolyhedronData["Dodecahedron", "Faces", "Polygon"]];
-	f = Function[{$}, {{First[#], Plus @@ # / 2, Last[$]}, {Last[#], Plus @@ # / 2, Last[$]}} & /@ First[$]];
-	g = Function[{$1, $2, $3}, {{$1, #, $2}, {$3, #, $2}}&[$1 + (($2 - $1).#) # &[# / Sqrt[#.#] &[($3 - $1)]]]];
-	h = {
-		Polygon /@ #1, Polygon /@ #2,
+	{faces, f, ff, g, hh, h, ploys},
+	f[s_] := {{First@#, Plus @@ # / 2, Last@s}, {Last@#, Plus @@ # / 2, Last@s}}& /@ First[s];
+	g[x_, y_, z_] := {{x, #, y}, {z, #, y}}&[x + # * ((y - x).#)&[# / Sqrt[#.#]&[z - x]]];
+	hh = Function[$, Function[$, # + 0.8 ($ - #)] /@ $ &[Plus @@ $ / 3]];
+	h[p_, q_] := {
+		Polygon /@ p,
+		Polygon /@ q,
 		MapThread[
-			Polygon[Join[#1, #2]] &,
+			Polygon@Join[#1, #2]&,
 			{
-				Reverse /@ Flatten[Partition[#, 2, 1] & /@ (Append[#, First[#]] & /@ #2), 1],
-				Flatten[Partition[#, 2, 1] & /@ (Append[#, First[#]] & /@ #1), 1]
+				Reverse /@ Flatten[Partition[#, 2, 1]& /@ (Append[#, First@#]& /@ q), 1],
+				Flatten[Partition[#, 2, 1]& /@ (Append[#, First@#]& /@ p), 1]
 			}
 		]
-	} &;
+	};
+	faces = First /@ First[N@PolyhedronData["Dodecahedron", "Faces", "Polygon"]];
+	ff = Flatten[f /@ ({Partition[Append[#, First[#]], 2, 1], Plus @@ # / 5}& /@ faces), 2];
 	ploys = {
 		EdgeForm[{GrayLevel[0.25], Thickness[0.001]}],
 		SurfaceColor[GrayLevel[0.8], RGBColor[1, 0.4, 1], 3],
-		h @@ ({Map[0.92 # &, #, {-1}], #} &[(
-			Function[$, Function[$, # + 0.8 ($ - #)] /@ $ &[Plus @@ $ / 3]] /@
-				Map[
-					# ((1.07 - Sqrt[1.07 - (# - 0.850651)^2]) &[Sqrt[#.#]]) &,
-					Nest[
-						Flatten[Apply[g, #, {1}], 1] &,
-						Flatten[f /@ ({Partition[Append[#, First[#]], 2, 1],
-							Plus @@ # / 5} & /@ faces), 2],
-						3
-					],
-					{-2}
-				]
-		)])
+		h @@ {Map[0.92 # &, #, {-1}], #}&[
+			hh /@ Map[
+				# * (1.07 - Sqrt[1.07 - (# - 0.850651)^2]&[Sqrt[#.#]])&,
+				Nest[Flatten[Apply[g, #, {1}], 1]&, ff, 3],
+				{-2}
+			]
+		]
 	};
 	Graphics3D[ploys, Boxed -> False]
 ]
@@ -394,13 +392,26 @@ First[p]]) / \[RegisteredTrademark] ({(*cyclic*) Partition[Append[#, First[#]], 
 
 
 (* split triangle into four triangles *)
-triangleTo4Triangles[Polygon[{pl_, p2_, p3_} ll :=
-	With[{pl2 = (pl + p2) / 2, p23 = (p2 + p3) / 2, p31 = (p3 + pl) / 2},
-		{Polygon[{pl, pl2, p31}], Polygon[{pl2, p2, p23} l,
-			Polygon[{p23, p3, p3l} l, Polygon[{pl2, p23, p3l} l} l
-ln[431 := triangleList = Polygon / \[RegisteredTrademark] orthogonalSubdivision[
-	First / \[RegisteredTrademark] Nest[Flatten[triangleTo4Triangles / \[RegisteredTrademark] #] &,
-		First[Polyhedron[Icosahedron]], 2], 4];
+triangleTo4Triangles[Polygon[{p1_, p2_, p3_}]] := With[
+	{
+		p12 = (p1 + p2) / 2,
+		p23 = (p2 + p3) / 2,
+		p31 = (p3 + p1) / 2
+	},
+	{
+		Polygon[{p1, p12, p31}],
+		Polygon[{p12, p2, p23}],
+		Polygon[{p23, p3, p31}],
+		Polygon[{p12, p23, p31}]
+	}
+]
+triangleList = Polygon /@ orthogonalSubdivision[
+	Nest[
+		Flatten[triangleTo4Triangles /@ #]&,
+		First[PolyhedronData["Icosahedron"]],
+		2
+	][[All, 1]], 4
+];
 
 
 (* ::Text:: *)
@@ -408,17 +419,17 @@ ln[431 := triangleList = Polygon / \[RegisteredTrademark] orthogonalSubdivision[
 
 
 (* length of the longest edge of a triangle *)
-maxEdgeLength[Polygon[{pl_, p2_, p3_} ll :=
-	
-	Sqrt[Max[#.# & / \[RegisteredTrademark] {pl - p2, p2 - p3, p3 - pl} ll
-	(* contract a polygon *)
-		contract[Polygon[{pl_, p2_, p3_} 1, f_l :=
-			Module[{mp = (pl + p2 + p3) / 3}, mp + f (# - mp) & / \[RegisteredTrademark] {pl, p2, p3} l;
-			ln[48] := addColor[p : Polygon[{pl_, p2_, p3_} ll :=
-				With[{A = (*large number*) 10 A6 maxEdgeLength[p]},
-					{SurfaceColor[Hue[A], Hue[A], 3],
-						Polygon[# / Sqrt[#.#] & / \[RegisteredTrademark] (contract[p, 0.7]) 1} 1
-ln[49] := Show[Graphics3D[{EdgeForm[], addColor / \[RegisteredTrademark] triangleList} l, Boxed -> False];
+maxEdgeLength[Polygon[{p1_, p2_, p3_}]] := Sqrt@Max[#.#& /@ {p1 - p2, p2 - p3, p3 - p1}];
+
+
+(* contract a polygon *)
+contract[Polygon[{pl_, p2_, p3_} 1, f_l :=
+	Module[{mp = (pl + p2 + p3) / 3}, mp + f (# - mp) & / \[RegisteredTrademark] {pl, p2, p3} l;
+	ln[48] := addColor[p : Polygon[{pl_, p2_, p3_} ll :=
+		With[{A = (*large number*) 10 A6 maxEdgeLength[p]},
+			{SurfaceColor[Hue[A], Hue[A], 3],
+				Polygon[# / Sqrt[#.#] & / \[RegisteredTrademark] (contract[p, 0.7]) 1} 1
+Graphics3D[{EdgeForm[], addColor / \[RegisteredTrademark] triangleList}, Boxed -> False];
 
 
 (* ::Text:: *)
@@ -431,11 +442,11 @@ HyperbolicDodecahedron[
 	d : (radialContractionFactor_?(0 < # < 1 &)),
 	e : (1 ateralContractionFactor_?(0 < # < 1 &)),
 	opts ___ ?OptionQ] : \[Bullet]
-	Show[Graphics3D[{BdgeForm[], SurfaceColor[RGBColor[0.7, 0.5, 0.2],
-		RGBColor[O . S , 0.4, 0 . 7], 2] , Thickness[0 . 0001], Function[{t, f}, Function[{l, o},
-		{Polygon / 80, Polygon /@ Map[d # &, o, {-2}], Polygon /@ (Join[#[[1]],
-			Reverse[#[[2]]]] & /@ Transpose[{Flatten[Partition[#, 2, 1] & /@ 1, 1],
-			Flatten[Partition[#, 2, 1] & / 0 Map[d # &, l, {-2} l, 1 l} Jl,
+Show[Graphics3D[{BdgeForm[], SurfaceColor[RGBColor[0.7, 0.5, 0.2],
+	RGBColor[O . S , 0.4, 0 . 7], 2] , Thickness[0 . 0001], Function[{t, f}, Function[{l, o},
+	{Polygon / 80, Polygon /@ Map[d # &, o, {-2}], Polygon /@ (Join[#[[1]],
+		Reverse[#[[2]]]] & /@ Transpose[{Flatten[Partition[#, 2, 1] & /@ 1, 1],
+		Flatten[Partition[#, 2, 1] & / 0 Map[d # &, l, {-2} l, 1 l} Jl,
 Line /@ l, Line /@ Map[d # &, l , {-2} J, Line /@ Transpose[{#, Map[d # &, #, {-2} 1} & 1
 Map[f, Flatten[t, 11, { -2} 1 11 } 1[Map[f , Apply[Function l {p, q, r} ,
 	Function ({a, b, c}, Join[##, {p} 1 & 00 (Apply[(Function ($1, #1 + $1 #21 / 0
@@ -497,9 +508,9 @@ HyperbolicDodecahedron[2, 3, 0.89, 0.72];
 (*For the sake of elegance, we make some of the calculations inside the Module more efficient as compared with the above implementation (which was easier to present and discuss).*)
 
 
-Remove [HyperbolicPlatonicSolid] ;
+Remove[HyperbolicPlatonicSolid] ;
 HyperbolicPlatonicSolid[
-	plato: (Hexahedron I Tetrahedron I Octahedron I Dodecahedron I
+	plato : (Hexahedron I Tetrahedron I Octahedron I Dodecahedron I
 Icosahedron), radRed_?((NumberQ[#] && N[#] > 1) &), opts __ ] :=
 Module[
 	{polyhedron, numFaces, numVertices, mpPlato, pa, pb, pc,
@@ -507,21 +518,21 @@ Module[
 		from, ac, be, polys, rad, mpSphere, intersectionPoint,
 		polys3D, firstPart, reflect, secondPart, part, aMatA, mat, surface},
 (* extract data from polyhedron *)
-	polyhedron= Polyhedron[plato] [[1]];
+	polyhedron = Polyhedron[plato][[1]];
 	numFaces = Length[polyhedron];
 	numVertices = Length[polyhedron[[l, 1]]];
-	mpPlato =Plus\[RegisteredTrademark]\[RegisteredTrademark] Flatten[First /@polyhedron, 1]/numVertices;
-	pa Plus\[RegisteredTrademark]\[RegisteredTrademark] polyhedron[[!, 1]]/numvertices;
+	mpPlato = Plus\[RegisteredTrademark]\[RegisteredTrademark] Flatten[First /@ polyhedron, 1] / numVertices;
+	pa Plus\[RegisteredTrademark]\[RegisteredTrademark] polyhedron[[!, 1]] / numvertices;
 pc polyhedron[[!, 1, 1]];
-pb (polyhedron[[!, 1, 2]] +polyhedron[[!, 1, 1]])/2;
+pb (polyhedron[[!, 1, 2]] + polyhedron[[!, 1, 1]]) / 2;
 ab pb - pa; ac = pc - pa; be = pc - pb;
 (* form new points *)
-pl pa + ab/4; p2 pa + ab/2; p3 pa + 3ab/4;
-p4 = pa + ac/4; pS = pa + ac/2; p6 pb + bc/2;
-p9 = pa + 3ac/4; p7 = pb + 3bc/4; p8 = p9 + (pc - p9)/2;
-pll p9 + (pb - p9)/2; plO = p9 + (pll - p9)/2;
-p12 = pll + (p6 - pll)/2; pl3 = pll + (pc - pll)/2;
-p14 = pS + (pb - pS)/2;
+pl pa + ab / 4; p2 pa + ab / 2; p3 pa + 3ab / 4;
+p4 = pa + ac / 4; pS = pa + ac / 2; p6 pb + bc / 2;
+p9 = pa + 3ac / 4; p7 = pb + 3bc / 4; p8 = p9 + (pc - p9) / 2;
+pll p9 + (pb - p9) / 2; plO = p9 + (pll - p9) / 2;
+p12 = pll + (p6 - pll) / 2; pl3 = pll + (pc - pll) / 2;
+p14 = pS + (pb - pS) / 2;
 ( * the triangulated part *)
 polys = {{pa, pl, p4}, {p4, pS, pl}, {pl, p2, pS},
 	{pS, p2, p3}, {pS, p9, pll}, {pb, p6, pll},
@@ -530,50 +541,50 @@ polys = {{pa, pl, p4}, {p4, pS, pl}, {pl, p2, pS},
 	{pc, p7, p13}, {p8, plO, p13}, {p3, pS, pl4},
 	{p3, pb, p14}, {pb, pll, p14}, {ps, pll, p14}};
 (* move toward center *)
-rad = N[radRed] Sqrt[#.#]&[(pc- pa)];
+rad = N[radRed] Sqrt[#.#]&[(pc - pa)];
 mpSphere = pa + Sqrt[N[radRed]A2 - 1A2] Sqrt[(pc - pa). (pc - pa)] *
-	#/Sqrt[#.#]&[pa- mpPlato];
+	# / Sqrt[#.#]&[pa - mpPlato];
 intersectionPoint[point_, rad_] :=
 	Module[{kkq, mppq, kmpq, s},
 		kkq = mpSphere.mpSphere;
-		mppq = (point- mpPlato). (point- mpPlato);
-		kmpq = mpSphere.(point- mpPlato);
-		s = kmpq/mppq- Sqrt[(kmpq/mppq)A2 + (radA2- kkq)/mppq];
-		s (point- mpPlato)];
+		mppq = (point - mpPlato). (point - mpPlato);
+		kmpq = mpSphere.(point - mpPlato);
+		s = kmpq / mppq - Sqrt[(kmpq / mppq)A2 + (radA2 - kkq) / mppq];
+		s (point - mpPlato)];
 polys3D Map[intersectionPoint[#, rad]&, polys, {2}];
 firstPart = Polygon /@ polys3D;
-reflect[perp_, point_] :=point - 2point.perp/(perp.perp) perp;
+reflect[perp_, point_] := point - 2point.perp / (perp.perp) perp;
 (* double existing piece *)
-8S2 Three-Dimensional Graphics
+8S2 Three - Dimensional Graphics
 secondPart = Polygon /@ Map[reflect[pc - pb, #]&, polys3D, {2}1;
 part[numVertices] = Join[firstPart, secondPart];
 aMatA = Table[a[i, j], {i, 3}, {j, 3}] ;
 (* calculate rotation matrices *)
 Do[mat[i] \[Bullet] {aMatA /. Solve[
 	Flatten[Table[Thread[aMatA.polyhedron[[l, 1, j]] == polyhedron[[l, 1,
-		RotateLeft[Table[~. {~. numVertices}], j] [[i]]]]],
+		RotateLeft[Table[ ~ . { ~ . numVertices}], j][[i]]]]],
 {j, 3}]], Flatten[aMatA]] //. {0.0 _ -> 0.0}
-(* " for numerical reasons " *) ) [ [1]],
+(* " for numerical reasons " *) )[[1]],
 {i, numVertices - 1}1 ;
 (* rotate pieces inside one face *)
 Do[part[i] = Map[{mat[i] .#)&, part[numVertices], {3}],
-{i, 1, numVertices- 1}];
-face\[Sterling]1] \[Bullet] Flatten[Table[part[i], {i, numVertices}ll;
+{i, 1, numVertices - 1}];
+face\[Sterling]1]\[Bullet] Flatten[Table[part[i], {i, numVertices}ll;
 Do[rot[i] = {aMatA /.
 	Solve[Flatten[Table[Thread[aMatA.
 		polyhedron[\[Sterling]1, 1, j]] == polyhedron[[i, 1, j]]],
-		{j, 3}]], F1atten[aMatA]] //. {0.0 _ -> O.O}J [[1]], {i, numFaces}];
+		{j, 3}]], F1atten[aMatA]] //. {0.0 _ -> O.O}J[[1]], {i, numFaces}];
 (* generate other faces *)
 Do[face[i] = Map[{rot[i].#)&, face[1], {3}], {i, 2, numFaces}J;
 Show[Graphics3D[{EdgeForm[Thickness[0.0001]],
-	Table[face[i], {i, numFaces}J}J, opts, Boxed-> False]]
+	Table[face[i], {i, numFaces}J}J, opts, Boxed -> False]]
 
 
 (* ::Text:: *)
 (*Here are the remaining hyperbolic Platonic bodies, each indented differently. (Because of the different forms of the bodies, SphericalRegion - > True does not help to make all bodies of the same size; the bounding box not shown will always fit into the displayed volume.)*)
 
 
-ln[55]:= Show [ GraphicsArray [
+Show[ GraphicsArray[
 	Block\[Sterling]{$DisplayFunction = Identity},
 	{HyperbolicP1atonicSolid[Tetrahedron, 3],
 		HyperbolicPlatonicSolid[Octahedron, 2],
@@ -585,54 +596,52 @@ ln[55]:= Show [ GraphicsArray [
 (*We can also adapt the above given short implementation to the other Platonic solids. This results in the following code.*)
 
 
-Needs [\[Bullet]Graphics'Polyhedra'\[Bullet]]
-Clear[HyperbolicPlato];
-HyperbolicPlato[plato: {Tetrahedron I Hexahedron I Octahedron
+HyperbolicPlato[plato : {Tetrahedron I Hexahedron I Octahedron
 	Dodecahedron I Icosahedron),
-x: {radia1ContractionExponent_?{Im[#]a=0&)),
-n: {faceSubdivision_Integer?Positive),
-m:{invisibleSubdivisionOfTriangles_ Integer?Positive),
-d:{radialContractionFactor_ ?{O<#<l&)),
-e: {lateralContractionFactor_?{0<#<1&)),
-h: (hueCo1orSpecification_?(0<=#<\[Bullet]1&)),
+x : {radia1ContractionExponent_?{Im[#]a = 0&)),
+n : {faceSubdivision_Integer?Positive),
+m : {invisibleSubdivisionOfTriangles_ Integer?Positive),
+d : {radialContractionFactor_ ?{O < # < l&)),
+e : {lateralContractionFactor_?{0 < # < 1&)),
+h : (hueCo1orSpecification_?(0 <= # < \[Bullet]1&)),
 opts ___ ?OptionQ] :=
-Show[Graphics3D[{EdgeFo~[],SurfaceColor[Hue[h],Hue[h],2.2],
-Thickness[O.OOl],Function[{t,f},Function[{l,o},
-	{Polygon/eo,Polygon/OMap[di&,o,{-2}],Polygon/O(Join[#[[l]],
-		Reverse[#[[2]]]]&/eTranspose[{Flatten[Partition[#,2,1]&/0l, l],
-		Flatten[Partition[i,2,1]&/0Map[d #&,l,{-2}l,ll}l),
-Line/Ol,Line/0Map[di&,l,{-2}],Line/\[RegisteredTrademark]Transpose[{#,Map[di&,#,{-2}l}&[
-Map [f ,Flatten [t, 1], { -2}111 }l [Map [f,Apply [Function l{p, q, r},
-	Function[{a,b,c},Join[##,{p}l&O\[RegisteredTrademark](Apply[(Function[$l,il+$1 #2]/\[RegisteredTrademark]
-Range [0 ,m-1]) &, { {p, a}, {q,b}, {r, c}}, {1}])] [ (q-p) /m, (r-q) /m, (p-r) /mll,
-t,{l}l,{-2}],Map[f,Flatten[Apply[Function[{p,q,r},Function[s,
-	Join[Flatten[Apply[s[(ii]]&,Mapindexed[{i,#+{1,0},i+{0,1}}&[
-		Reversa[i2]]&,Range[m-i+1]&/0Ranga[m],{2}l,{3}],1],
-		Flatten[Apply[s[[##]]&,Mapindexed[{#+{0,1},#+{1,1},i+{l,O}}&[
-			Reverse[i2]]&,Range[m-#]&/\[RegisteredTrademark]Range[ml,{2}l,{3}l,1lll [Function[{a,b},
-			Mapindexed[p+(#2-{1,1}).{a,b}&,Thread/\[RegisteredTrademark]({#,Range[O,m-il}&/\[RegisteredTrademark]
-Range [O,m]), {2}11 [ (q-p) /m, (r-p) /m]]) ,t,{1}1 ,1] ,{ -2}111 [Function[$,
-	Function[$,#+e($-#)]/@$&[Plus0\[RegisteredTrademark]$/3]]/@
-	Nest[Flatten[Apply[Function[{$1,$2 , $3},{{$1,#,$2},{$3,#,$2}}&[
-		$1+(($2-$1).#)#&[#/Sqrt[#.#]&[($3-$1)]]]],i,{1}],1]&,F1atten[
-		Function[{$},{{First[#],Plus0\[RegisteredTrademark] #/2 , Last[$J},{Last[#],Plus\[RegisteredTrademark]\[RegisteredTrademark] #/2,
-			Last[$J}}&/@First[$]]/O({Partition[Append[#,First[i]],2,1],
-	Plus\[RegisteredTrademark]\[RegisteredTrademark]i/Length[#J}&/O(First/\[RegisteredTrademark]First[Map[#/Sqrt[#.#]&,Take[
-	Polyhedron[plato],1],{-2}]])),2],n],i/(#.#)Ax&l}J,opts,
-Boxed->False,PlotRange->All,SphericalRegion->True];
+Show[Graphics3D[{EdgeFo ~[], SurfaceColor[Hue[h], Hue[h], 2.2],
+Thickness[O.OOl], Function[{t, f}, Function[{l, o},
+	{Polygon / eo, Polygon / OMap[di&, o, {-2}], Polygon / O(Join[#[[l]],
+		Reverse[#[[2]]]]& / eTranspose[{Flatten[Partition[#, 2, 1]& / 0l, l],
+		Flatten[Partition[i, 2, 1]& / 0Map[d #&, l, {-2}l, ll}l),
+Line / Ol, Line / 0Map[di&, l, {-2}], Line / \[RegisteredTrademark]Transpose[{#, Map[di&, #, {-2}l}&[
+Map[f , Flatten[t, 1], { -2}111 }l[Map[f, Apply[Function l{p, q, r},
+	Function[{a, b, c}, Join[##, {p}l&O\[RegisteredTrademark](Apply[(Function[$l, il + $1 #2] / \[RegisteredTrademark]
+Range[0 , m - 1]) &, { {p, a}, {q, b}, {r, c}}, {1}])][ (q - p) / m, (r - q) / m, (p - r) / mll,
+t, {l}l, {-2}], Map[f, Flatten[Apply[Function[{p, q, r}, Function[s,
+	Join[Flatten[Apply[s[(ii]]&, Mapindexed[{i, # + {1, 0}, i + {0, 1}}&[
+		Reversa[i2]]&, Range[m - i + 1]& / 0Ranga[m], {2}l, {3}], 1],
+		Flatten[Apply[s[[##]]&, Mapindexed[{# + {0, 1}, # + {1, 1}, i + {l, O}}&[
+			Reverse[i2]]&, Range[m - #]& / \[RegisteredTrademark]Range[ml, {2}l, {3}l, 1lll[Function[{a, b},
+			Mapindexed[p + (#2 - {1, 1}).{a, b}&, Thread / \[RegisteredTrademark]({#, Range[O, m - il}& / \[RegisteredTrademark]
+Range[O, m]), {2}11[ (q - p) / m, (r - p) / m]]) , t, {1}1 , 1], { -2}111[Function[$,
+	Function[$, # + e($ - #)] /@ $&[Plus0\[RegisteredTrademark]$ / 3]] /@
+	Nest[Flatten[Apply[Function[{$1, $2 , $3}, {{$1, #, $2}, {$3, #, $2}}&[
+		$1 + (($2 - $1).#)#&[# / Sqrt[#.#]&[($3 - $1)]]]], i, {1}], 1]&, F1atten[
+		Function[{$}, {{First[#], Plus0\[RegisteredTrademark] # / 2 , Last[$J}, {Last[#], Plus\[RegisteredTrademark]\[RegisteredTrademark] # / 2,
+			Last[$J}}& /@ First[$]] / O({Partition[Append[#, First[i]], 2, 1],
+	Plus\[RegisteredTrademark]\[RegisteredTrademark]i / Length[#J}& / O(First / \[RegisteredTrademark]First[Map[# / Sqrt[#.#]&, Take[
+	Polyhedron[plato], 1], {-2}]])), 2], n], i / (#.#)Ax&l}J, opts,
+Boxed -> False, PlotRange -> All, SphericalRegion -> True];
 
 
 (* ::Text:: *)
 (*The last HyperbolicPlato code also allows us to view the transition between a " hyperbolic " and a " parabolic " Platonic solid.*)
 
 
-(CellPrint[Cell[" o \[Bullet] <> ToString[#] <> "transition:", "Text\[Bullet]]];
-Show[GraphicsArray[ill& /@Partition[
+(CellPrint[Cell[" o \[Bullet] <> ToString[#] <> "transition : ", "Text\[Bullet]]];
+Show[GraphicsArray[ill& /@ Partition[
 	Table[HyperbolicPlato[#, x, 2, 3, 0.91, 0.74,
 	(* better contrast for printed version *)
-		If[Options[Graphics3D, ColorOutput] [[1, 2]] z\[Bullet]\[Bullet] GrayLavel,
-			0.25 + 0.15 x, (x + 1)/2 0.8],
-		DisplayFunction ->Identity], {x, -1, 1 , 2/8}1, 3])& /0
+		If[Options[Graphics3D, ColorOutput][[1, 2]] z\[Bullet]\[Bullet] GrayLavel,
+			0.25 + 0.15 x, (x + 1) / 2 0.8],
+		DisplayFunction -> Identity], {x, -1, 1 , 2 / 8}1, 3])& / 0
 {Tetrahedron, Hexahedron, Octahedron, Dodecahedron, Icosahedron};
 
 
