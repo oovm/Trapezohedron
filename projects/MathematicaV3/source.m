@@ -71,7 +71,7 @@
 (*Finally, we display the resulting 12 faces.*)
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Start*)
 
 
@@ -336,11 +336,11 @@ Graphics3D[
 
 
 Block[
-	{faces, f, ff, g, hh, h, ploys},
+	{name = "Dodecahedron", f, g, h, \[Lambda], faces, ploys},
 	f[s_] := {{First@#, Plus @@ # / 2, Last@s}, {Last@#, Plus @@ # / 2, Last@s}}& /@ First[s];
 	g[x_, y_, z_] := {{x, #, y}, {z, #, y}}&[x + # * ((y - x).#)&[# / Sqrt[#.#]&[z - x]]];
-	hh = Function[$, Function[$, # + 0.8 ($ - #)] /@ $ &[Plus @@ $ / 3]];
-	h[p_, q_] := {
+	h[x_] := Function[z, # + 0.8 (z - #)] /@ x&[Plus @@ x / 3];
+	\[Lambda][p_, q_] := {
 		Polygon /@ p,
 		Polygon /@ q,
 		MapThread[
@@ -351,21 +351,25 @@ Block[
 			}
 		]
 	};
-	faces = First /@ First[N@PolyhedronData["Dodecahedron", "Faces", "Polygon"]];
-	ff = Flatten[f /@ ({Partition[Append[#, First[#]], 2, 1], Plus @@ # / 5}& /@ faces), 2];
+	faces = First /@ First[N@PolyhedronData[name, "Faces", "Polygon"]];
+	faces = Flatten[f /@ ({Partition[Append[#, First@#], 2, 1], Plus @@ # / 5}& /@ faces), 2];
 	ploys = {
 		EdgeForm[{GrayLevel[0.25], Thickness[0.001]}],
 		SurfaceColor[GrayLevel[0.8], RGBColor[1, 0.4, 1], 3],
-		h @@ {Map[0.92 # &, #, {-1}], #}&[
-			hh /@ Map[
+		\[Lambda] @@ {Map[0.92 # &, #, {-1}], #}&[
+			h /@ Map[
 				# * (1.07 - Sqrt[1.07 - (# - 0.850651)^2]&[Sqrt[#.#]])&,
-				Nest[Flatten[Apply[g, #, {1}], 1]&, ff, 3],
+				Nest[Flatten[Apply[g, #, {1}], 1]&, faces, 3],
 				{-2}
 			]
 		]
 	};
 	Graphics3D[ploys, Boxed -> False]
 ]
+
+
+(* ::Section:: *)
+(*Variant*)
 
 
 (* ::Text:: *)
@@ -376,15 +380,19 @@ Block[
 (*In the last function, the main work was the recursive subdivision of the right - angled triangles in two right - angled triangles. We extract this part and call it orthogonalSubdi vision.*)
 
 
-orthogonalSubdivision[1 _, n_] : =
-Nest[Flatten[Apply[Function[{pl, p2, p3},
-< {{pl, #, p2}, {p3, #, p2}} &)[
-(* project *) (pl + (p2 - pl) .# # &)[ (* new point on edge *)
-	(# / Sqrt[#.#] &)[p3 - pl]]]], #1, {1} 1, 1]&,
-Flatten[(Function[{p}, < {{First[#], Plus\[RegisteredTrademark]\[RegisteredTrademark] # / 2, Last[pl},
-	{Last[#], Plus @@ # / 2, Last[pl}} &) / \[RegisteredTrademark]
-First[p]]) / \[RegisteredTrademark] ({(*cyclic*) Partition[Append[#, First[#]], 2, 1],
-(*center *)Plus @@ # / 3} &) / \[RegisteredTrademark] 1, 2], n]
+orthogonalSubdivision[l_, n_] := Block[
+	{f, g},
+	f[p1_, p2_, p3_] := {{p1, #, p2}, {p3, #, p2}}&[(p1 + (p2 - p1).# * #&)[# / Sqrt[#.#]&[p3 - p1]]];
+	g[p_] := {
+		{First[#], Plus @@ # / 2, Last[p]},
+		{Last[#], Plus @@ # / 2, Last[p]}
+	}& /@ First[p];
+	Nest[
+		Flatten[Apply[f, #1, {1}], 1]&,
+		Flatten[g /@ {Partition[Append[#, First[#]], 2, 1],Plus @@ # / 3}& /@ l, 2],
+		n
+	]
+];
 
 
 (* ::Text:: *)
@@ -404,13 +412,15 @@ triangleTo4Triangles[Polygon[{p1_, p2_, p3_}]] := With[
 		Polygon[{p23, p3, p31}],
 		Polygon[{p12, p23, p31}]
 	}
-]
-triangleList = Polygon /@ orthogonalSubdivision[
-	Nest[
+];
+triangleList = Block[
+	{splits},
+	splits = Nest[
 		Flatten[triangleTo4Triangles /@ #]&,
-		First[PolyhedronData["Icosahedron"]],
+		First[PolyhedronData["Icosahedron", "Faces", "Polygon"]],
 		2
-	][[All, 1]], 4
+	];
+	Polygon /@ orthogonalSubdivision[First /@ splits, 4]
 ];
 
 
@@ -423,13 +433,25 @@ maxEdgeLength[Polygon[{p1_, p2_, p3_}]] := Sqrt@Max[#.#& /@ {p1 - p2, p2 - p3, p
 
 
 (* contract a polygon *)
-contract[Polygon[{pl_, p2_, p3_} 1, f_l :=
-	Module[{mp = (pl + p2 + p3) / 3}, mp + f (# - mp) & / \[RegisteredTrademark] {pl, p2, p3} l;
-	ln[48] := addColor[p : Polygon[{pl_, p2_, p3_} ll :=
-		With[{A = (*large number*) 10 A6 maxEdgeLength[p]},
-			{SurfaceColor[Hue[A], Hue[A], 3],
-				Polygon[# / Sqrt[#.#] & / \[RegisteredTrademark] (contract[p, 0.7]) 1} 1
-Graphics3D[{EdgeForm[], addColor / \[RegisteredTrademark] triangleList}, Boxed -> False];
+contract[Polygon[{p1_, p2_, p3_}], f_] := Module[
+	{mp = (p1 + p2 + p3) / 3},
+	mp + f * (# - mp)& /@ {p1, p2, p3}
+];
+
+
+addColor[p : Polygon[{p1_, p2_, p3_}]] := With[
+	{\[Lambda] = 10^6 maxEdgeLength@p},
+	{
+		SurfaceColor[Hue[\[Lambda]], Hue[\[Lambda]], 3],
+		Polygon[# / Sqrt[#.#]& /@ contract[p, 0.7]]
+	}
+];
+
+
+Graphics3D[
+	{EdgeForm[], addColor /@ triangleList},
+	Boxed -> False
+]
 
 
 (* ::Text:: *)
