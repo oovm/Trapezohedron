@@ -384,12 +384,12 @@ orthogonalSubdivision[l_, n_] := Block[
 	{f, g},
 	f[p1_, p2_, p3_] := {{p1, #, p2}, {p3, #, p2}}&[(p1 + (p2 - p1).# * #&)[# / Sqrt[#.#]&[p3 - p1]]];
 	g[p_] := {
-		{First[#], Plus @@ # / 2, Last[p]},
-		{Last[#], Plus @@ # / 2, Last[p]}
+		{First@#, Plus @@ # / 2, Last@p},
+		{Last@#, Plus @@ # / 2, Last@p}
 	}& /@ First[p];
 	Nest[
-		Flatten[Apply[f, #1, {1}], 1]&,
-		Flatten[g /@ {Partition[Append[#, First[#]], 2, 1],Plus @@ # / 3}& /@ l, 2],
+		Flatten[f @@@ #, 1]&,
+		Flatten[g /@ {Partition[Append[#, First@#], 2, 1], Plus @@ # / 3}& /@ l, 2],
 		n
 	]
 ];
@@ -417,7 +417,7 @@ triangleList = Block[
 	{splits},
 	splits = Nest[
 		Flatten[triangleTo4Triangles /@ #]&,
-		First[PolyhedronData["Icosahedron", "Faces", "Polygon"]],
+		Flatten@PolyhedronData["Icosahedron", "Faces", "Polygon"],
 		2
 	];
 	Polygon /@ orthogonalSubdivision[First /@ splits, 4]
@@ -461,33 +461,39 @@ Graphics3D[
 HyperbolicDodecahedron[
 	n : (faceSubdivision_Integer?Positive),
 	m : (invisibleSubdivisionOfTriangles_Integer?Positive),
-	d : (radialContractionFactor_?(0 < # < 1 &)),
-	e : (1 ateralContractionFactor_?(0 < # < 1 &)),
-	opts ___ ?OptionQ] : \[Bullet]
-Show[Graphics3D[{BdgeForm[], SurfaceColor[RGBColor[0.7, 0.5, 0.2],
-	RGBColor[O . S , 0.4, 0 . 7], 2] , Thickness[0 . 0001], Function[{t, f}, Function[{l, o},
-	{Polygon / 80, Polygon /@ Map[d # &, o, {-2}], Polygon /@ (Join[#[[1]],
-		Reverse[#[[2]]]] & /@ Transpose[{Flatten[Partition[#, 2, 1] & /@ 1, 1],
-		Flatten[Partition[#, 2, 1] & / 0 Map[d # &, l, {-2} l, 1 l} Jl,
-Line /@ l, Line /@ Map[d # &, l , {-2} J, Line /@ Transpose[{#, Map[d # &, #, {-2} 1} & 1
-Map[f, Flatten[t, 11, { -2} 1 11 } 1[Map[f , Apply[Function l {p, q, r} ,
-	Function ({a, b, c}, Join[##, {p} 1 & 00 (Apply[(Function ($1, #1 + $1 #21 / 0
-		Range[O, m - 11) &, {{p, a}, {q, b} , {r, c}}, {1} 1 ) 1[(q - p) / m, (r - q) / m, (p - r) / m1],
-t, {1} l, {-2} l , Map[f, Flatten[Apply[Function[{p, q, r}, Function[s,
-	Join[Flattan[Apply[s[[##11 &, Mapindexed[{# , # + {1, 0}, # + {0, 1}} & 1
-		Reverse[#2]] &, Range[m - # + 11 & /@ Range[ml, {2} l, {3} l, 1], F1atten[Apply[
-		s[[##]] &, Mapindexed[{# + {0, 1}, # + {1, 1}, # + {l, O}} &[Reverse[#2]] &,
-			Range[m - #] & / IIRange[m1, {2} 1, {3} 1, 1]] 1[Function l {a, b},
-			Mapindexed[p + (l2 - {1, 1} l . {a, b} &, Thread / II ({#, Range[O, m - 11} & /@
-Range[0 , m]) , {2} ]][ (q - p) / m, (r - p) / mlll , t , {1} 1 , 11 , { -2} l]][Function[$,
-	Function[$, # + e ($ - #)] /@ $ &[Plus @@ $ / 3]] /@ Nest[Flatten[Apply[
-	Function[{$1, $2, $3}, {{$1, #, $2}, {$3, #, $2}} &[$1 + (($2 - $1) . #) # &[
-		# / Sqrt[# . #1 &[($3 - $1lll11 , #, {1} 1, 11 &, Flatten[Function[{$},
-			{{First[11 , Plus00 # / 2, Last[$1}, {Last[#1, Plus00 # / 2, Last[$1}} & / 0
-First[$11 /@ ({Partition[Append[#, First[#J1, 2, 1], Plus00 # / 5} & /@ (First /@
-	First[Polyhedron[Dodecahedron] 1)), 2], n1, # ((1.07 - Sqrt[
-	1 . 07 - (I - 0 . 850651) A2]) &[Sqrt[#.I]]) & J} 1 , opts,
-Boxed -> Falsa, PlotRange -> All, ViewPoint - > {2 , 2, 2} 1;
+	d : (radialContractionFactor_?(0 < # < 1&)),
+	e : (lateralContractionFactor_?(0 < # < 1&)),
+	opts_?OptionQ
+] := Block[
+	{},
+	Graphics3D[{
+		EdgeForm[],Thickness[0.0001],
+		SurfaceColor[RGBColor[0.7, 0.5, 0.2],RGBColor[0.5, 0.4, 0.7] , 2] ,
+		Function[{t, f}, Function[{l , o}, {Polygon /@ o, Polygon /@ Map[d #&, o, {-2}] , Polygon /@ (Join[#[[1]],
+			Reverse[#[[2]]]]& /@ Transpose[{Flatten[Partition[#, 2, 1]& /@ l, 1],
+			Flatten[Partition[#, 2, l]& /@ Map[d #&, l, {-2}] , 1] }]),
+			Line /@ l, Line /@ Map[d #&, 1, {-2}] , Line /@ Transpose[{#, Map[d #&, #, {-2}] } &[
+				Map[f, Flatten[t, l], {-2}]]]}][Map[f, Apply[Function[{p, q, r},
+			Function[{a, b, c}, Join[##, {p}] & @@ (Apply[ (Function[$1, #1 + $1 #2] /@
+				Range[0, m - 1])&, {{p, a}, {q, b}, {r, c}}, {1}]) ][ (q - p) / m, (r - q) / m, (p - r) / m]], t, {l}] , {-2}], Map[f, Flatten[Apply[Function[{p, q, r}, Function[a,
+			Join[Flatten[Apply[s[[##]]&, MapIndexed[{#, # + {1, 0}, # + {0, l}}&[
+				Reverse[#2]]&, Range[m - # + l]& /@ Range[m], {2}] , {3}] , 1] , Flatten[Apply[ s[[##]]&, MapIndexed[{# + {0, l}, # + {1, 1}, # + {1, 0}}&[Reverse[#2]]&,
+				Range[m - #]& /@ Range[m], {2}], {3}], 1]]][Function[{a, b},
+			Maplndexed[p + (#2 - {l, l}) . {a, b}&, Thread /@ ({#, Ramge[0, m - #] }& /@
+				Range[0, m]), {2}]][(q - p) / m, (r - p) / m]]], t, {1}] , 1] , {-2}] ]][Function[$,
+			Function[$, # + e ($ - #) ] /@ $&[Plus @@ $ / 3] ] /@ Nest[Flatten[Apply[ Function[{$l, $2, $3}, {{$l, #, $2}, {$3, #, $2}}&[$l + (($2 - $l).#)#&[
+			# / Sqrt[#.#]&[($3 - $1)]]]], #, {1}, 1]&, Flatten[Function[{$},
+			{{First[#], Plus @@ # / 2, Last[$]}, {Last[#], Plus @@ # / 2, Last[$]}}& /@
+				First[$]] /@ ({Partition[Append[#, First[#]] , 2, 1] , Plus @@ # / 5}& /@ (First /@
+			First[Polyhedron[Dodecahedron]])), 2], n], #((1.07 - Sqrt[
+			1.07 - (# - 0.850651)^2])&[Sqrt[#.#]])&]]
+	},
+		opts, ViewPoint -> {2, 2, 2},
+		Boxed -> False, PlotRange -> All
+	]
+];
+
+
 
 
 (* ::Text:: *)
