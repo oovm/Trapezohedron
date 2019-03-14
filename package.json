@@ -1,0 +1,6 @@
+{
+    "name": "trapezohedron",
+    "scripts": {
+        "reset": "git reset Head~ --soft"
+    }
+}

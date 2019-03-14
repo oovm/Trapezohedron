@@ -11,7 +11,7 @@ $unicode = Block[
 ];
 fixUnicode[path_] := Block[
 	{text},
-	text = StringReplace[Import["source.m", "Text"], $unicode];
-	Export["source.m", text, "Text", CharacterEncoding -> "UTF8"];
+	text = StringReplace[Import[path, "Text"], $unicode];
+	Export[path, text, "Text", CharacterEncoding -> "UTF8"];
 ];
 End[];
